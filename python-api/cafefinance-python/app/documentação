@@ -1,0 +1,44 @@
+python-api/
+└── cafefinance-python/
+    │
+    ├── app/
+    │   │
+    │   ├── main.py
+    │   │
+    │   ├── routes/
+    │   │   └── health.py
+    │   │
+    │   ├── controllers/
+    │   │
+    │   ├── services/
+    │   │
+    │   ├── models/
+    │   │
+    │   ├── database/
+    │   │   └── connection.py
+    │   │
+    │   ├── schemas/
+    │   │
+    │   ├── utils/
+    │   │
+    │   └── core/
+    │       └── config.py
+    │
+    ├── requirements.txt
+    │
+    ├── Dockerfile
+    │
+    ├── .env
+    │
+    └── README.md
+
+    | Pasta       | Função             |
+| ----------- | ------------------ |
+| routes      | endpoints          |
+| controllers | controle das rotas |
+| services    | regras negócio     |
+| models      | entidades          |
+| database    | conexão PostgreSQL |
+| schemas     | validação Pydantic |
+| utils       | helpers            |
+| core        | configs globais    |
