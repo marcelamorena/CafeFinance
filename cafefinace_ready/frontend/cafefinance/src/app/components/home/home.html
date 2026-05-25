@@ -1,0 +1,157 @@
+<main class="workspace">
+  <section class="phone-frame">
+    <header class="topbar">
+      <a routerLink="/" class="brand">
+        <img src="/cafe-finance-logo.png" alt="Caf&eacute;Finance" />
+        <strong>Caf&eacute;Finance</strong>
+      </a>
+      <nav>
+        <a href="#rateio">Rateio</a>
+        <a href="#novo">Adicionar</a>
+      </nav>
+    </header>
+
+    <section class="hero-balance">
+      <div>
+        <p class="eyebrow">Meu saldo de caf&eacute;</p>
+        <h1>R$ 1.250,00</h1>
+        <p>Valor do m&ecirc;s mantendo casa, lazer e aluguel em ordem.</p>
+      </div>
+
+      <div class="coffee-cup" aria-label="Indicador de saldo de caf&eacute;">
+        <span class="level green">40%</span>
+        <span class="level amber">35%</span>
+        <span class="level red">18%</span>
+        <span class="level dark">07%</span>
+      </div>
+    </section>
+
+    <section class="grid-cards">
+      <article class="metric-card">
+        <p>Saldo Total</p>
+        <strong>R$ 1.250,00</strong>
+        <div class="bar-chart small">
+          <i style="height: 42%"></i>
+          <i style="height: 64%"></i>
+          <i style="height: 30%"></i>
+          <i style="height: 70%"></i>
+          <i style="height: 46%"></i>
+        </div>
+      </article>
+
+      <article class="metric-card">
+        <p>Entradas vs Sa&iacute;das</p>
+        <strong>+ R$ 730,00</strong>
+        <div class="bar-chart dual">
+          <i style="height: 70%"></i>
+          <i style="height: 46%"></i>
+          <i style="height: 82%"></i>
+          <i style="height: 38%"></i>
+          <i style="height: 64%"></i>
+        </div>
+      </article>
+    </section>
+
+    <section class="records-card">
+      <div class="section-heading">
+        <h2>&Uacute;ltimos Registros</h2>
+        <a href="#novo">+ Novo</a>
+      </div>
+
+      <ul class="records-list">
+        <li>
+          <span>&#128722;</span>
+          <div>
+            <strong>Mercado</strong>
+            <small>23 nov 2023</small>
+          </div>
+          <b>-R$ 333,00</b>
+        </li>
+        <li>
+          <span>&#127918;</span>
+          <div>
+            <strong>Lazer</strong>
+            <small>23 nov 2023</small>
+          </div>
+          <b>-R$ 13,00</b>
+        </li>
+        <li>
+          <span>&#127968;</span>
+          <div>
+            <strong>Aluguel</strong>
+            <small>30 nov 2023</small>
+          </div>
+          <b>-R$ 513,00</b>
+        </li>
+      </ul>
+    </section>
+
+    <section id="rateio" class="split-card">
+      <div class="section-heading">
+        <h2>Rateio e Condom&iacute;nio</h2>
+        <span>O Nosso Bule</span>
+      </div>
+
+      <div class="group-card">
+        <div class="pot">&#127862;</div>
+        <div>
+          <strong>Nossa Rep&uacute;blica</strong>
+          <p>Fundo comum</p>
+          <progress max="100" value="82"></progress>
+        </div>
+        <b>R$ 154,38</b>
+      </div>
+
+      <ul class="members-list">
+        <li><span>&#128105;</span><strong>Anna Rory</strong><em class="paid">Pago</em></li>
+        <li><span>&#128104;</span><strong>Nossa Pol&iacute;tica</strong><em>Pendente</em></li>
+        <li><span>&#127968;</span><strong>Aluguel</strong><em>Pendente</em></li>
+      </ul>
+
+      <div class="actions-row">
+        <button>Pagar Minha Parte</button>
+        <button>Adicionar Despesa</button>
+      </div>
+    </section>
+
+    <section class="report-card">
+      <h2>Meus gastos por categoria</h2>
+      <div class="report-content">
+        <div class="donut-chart" aria-label="Gastos por categoria"></div>
+        <div class="bar-chart report">
+          <i style="height: 88%"></i>
+          <i style="height: 36%"></i>
+          <i style="height: 70%"></i>
+          <i style="height: 56%"></i>
+        </div>
+      </div>
+      <p class="tip">Sua espuma de lazer est&aacute; alta. Que tal um caf&eacute; em casa?</p>
+    </section>
+
+    <section id="novo" class="new-record">
+      <span class="floating-add">+</span>
+      <h2>Adicionar novo registro</h2>
+
+      <div class="form-grid">
+        <label>Valor<input value="R$ 15,90" /></label>
+        <label>Data<input value="23 nov 2023" /></label>
+      </div>
+
+      <div class="categories">
+        <button>&#128652;<span>Transporte</span></button>
+        <button>&#127838;<span>Forno</span></button>
+        <button>&#129520;<span>Utilidades</span></button>
+        <button>&#127968;<span>Aluguel</span></button>
+      </div>
+
+      <label>Descri&ccedil;&atilde;o<textarea>Descri&ccedil;&atilde;o como</textarea></label>
+
+      <aside class="suggestion">
+        <span>&#9749;</span>
+        <p><strong>Sugest&atilde;o do Barista</strong> Seus gastos com lazer est&atilde;o altos este m&ecirc;s.</p>
+      </aside>
+
+      <button class="save-button">Salvar</button>
+    </section>
+  </section>
+</main>

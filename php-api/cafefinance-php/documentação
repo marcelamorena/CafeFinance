@@ -1,0 +1,34 @@
+php-api/
+└── cafefinance-php/
+    │
+    ├── public/
+    │   └── index.php
+    │
+    ├── config/
+    │   └── database.php
+    │
+    ├── routes/
+    │   └── api.php
+    │
+    ├── controllers/
+    │
+    ├── models/
+    │
+    ├── services/
+    │
+    ├── utils/
+    │
+    ├── .htaccess
+    │
+    └── Dockerfile
+
+| Pasta       | Função         |
+| ----------- | -------------- |
+| public      | entrada da API |
+| config      | conexão banco  |
+| routes      | rotas REST     |
+| controllers | lógica API     |
+| models      | acesso banco   |
+| services    | regras negócio |
+| utils       | helpers        |
+| Dockerfile  | container      |
