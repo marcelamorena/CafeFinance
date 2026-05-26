@@ -13,20 +13,24 @@
       </div>
     </section>
 
-    <form class="login-card">
+    <div  class="login-card">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <label>
         E-mail
-        <input type="email" placeholder="seuemail@exemplo.com" />
+        <input type="email" formControlName="email" placeholder="seuemail@exemplo.com" />
       </label>
 
       <label>
         Senha
-        <input type="password" placeholder="Digite sua senha" />
+        <input type="password" formControlName="password" placeholder="Digite sua senha" />
       </label>
-
-      <a class="primary-action" routerLink="/home">Entrar</a>
-      <a class="secondary-action" routerLink="/home">Criar conta</a>
+      
+      <button type="submit">Entrar</button>
+      <a class="secondary-action" routerLink="/cadastro">Criar conta</a>
     </form>
+  </div>
+
+  
 
     <section class="barista-tip">
       <span>&#9749;</span>

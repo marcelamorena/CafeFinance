@@ -15,7 +15,7 @@ services:
       POSTGRES_PASSWORD: app_pass
 
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -91,7 +91,7 @@ services:
     restart: always
 
     volumes:
-      - ./php-api/cafefinance-php/public:/var/www/html
+      - ./php-api/cafefinance-php:/var/www/html
 
     expose:
       - "80"

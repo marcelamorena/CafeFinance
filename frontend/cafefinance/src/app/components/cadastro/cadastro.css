@@ -1,0 +1,132 @@
+:host {
+  --coffee-beans-pattern: url("data:image/svg+xml,%3Csvg width='360' height='300' viewBox='0 0 360 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23170602' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round' opacity='.74'%3E%3Cg transform='translate(34 44) rotate(-28)'%3E%3Cellipse cx='0' cy='0' rx='33' ry='18'/%3E%3Cpath d='M-22 -6 C-9 -15 8 15 23 5'/%3E%3Cpath d='M-18 5 C-6 -1 6 9 18 2' opacity='.45'/%3E%3C/g%3E%3Cg transform='translate(130 20) rotate(72)'%3E%3Cellipse cx='0' cy='0' rx='31' ry='17'/%3E%3Cpath d='M-20 -5 C-8 -14 8 13 21 4'/%3E%3C/g%3E%3Cg transform='translate(248 44) rotate(-18)'%3E%3Cellipse cx='0' cy='0' rx='42' ry='22'/%3E%3Cpath d='M-28 -7 C-11 -17 12 18 29 6'/%3E%3Cpath d='M-24 6 C-8 -2 9 11 24 3' opacity='.38'/%3E%3C/g%3E%3Cg transform='translate(326 92) rotate(36)'%3E%3Cellipse cx='0' cy='0' rx='28' ry='15'/%3E%3Cpath d='M-18 -5 C-7 -12 7 12 19 4'/%3E%3C/g%3E%3Cg transform='translate(92 104) rotate(-44)'%3E%3Cellipse cx='0' cy='0' rx='25' ry='14'/%3E%3Cpath d='M-16 -4 C-6 -10 6 10 17 3'/%3E%3C/g%3E%3Cg transform='translate(190 118) rotate(31)'%3E%3Cellipse cx='0' cy='0' rx='32' ry='17'/%3E%3Cpath d='M-21 -5 C-8 -14 8 13 22 4'/%3E%3C/g%3E%3Cg transform='translate(42 194) rotate(78)'%3E%3Cellipse cx='0' cy='0' rx='41' ry='22'/%3E%3Cpath d='M-27 -7 C-11 -18 11 17 28 6'/%3E%3Cpath d='M-24 7 C-8 -3 9 11 24 3' opacity='.4'/%3E%3C/g%3E%3Cg transform='translate(142 202) rotate(-20)'%3E%3Cellipse cx='0' cy='0' rx='24' ry='13'/%3E%3Cpath d='M-15 -4 C-5 -10 5 9 16 3'/%3E%3C/g%3E%3Cg transform='translate(275 202) rotate(-38)'%3E%3Cellipse cx='0' cy='0' rx='36' ry='19'/%3E%3Cpath d='M-24 -6 C-9 -16 10 15 25 5'/%3E%3C/g%3E%3Cg transform='translate(194 278) rotate(10)'%3E%3Cellipse cx='0' cy='0' rx='29' ry='15'/%3E%3Cpath d='M-19 -5 C-7 -12 7 12 20 4'/%3E%3C/g%3E%3Cg transform='translate(332 270) rotate(64)'%3E%3Cellipse cx='0' cy='0' rx='34' ry='18'/%3E%3Cpath d='M-22 -5 C-9 -15 9 14 23 4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.cadastrar-se {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 34px;
+  background: linear-gradient(135deg, #2a1208 0%, #5a2a11 52%, #2b1308 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.cadastrar-se::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.42;
+  background-image: var(--coffee-beans-pattern);
+  background-size: 360px 300px;
+  pointer-events: none;
+}
+
+form {
+  width: min(100%, 760px);
+  display: grid;
+  gap: 18px;
+  padding: 34px 48px 42px;
+  border: 1px solid rgba(255, 244, 223, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 248, 234, 0.96);
+  box-shadow: 0 26px 70px rgba(15, 6, 2, 0.42);
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+form::before {
+  content: "CafeFinance";
+  display: block;
+  margin-bottom: 4px;
+  color: #6e3517;
+  font-family: "Cooper Black", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  font-weight: 900;
+  line-height: 1;
+}
+
+form::after {
+  content: "";
+  position: absolute;
+  right: -58px;
+  top: -58px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(110, 53, 23, 0.1);
+  pointer-events: none;
+}
+
+.form-group {
+  display: grid;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+label {
+  color: #301508;
+  font-weight: 900;
+}
+
+input {
+  width: 100%;
+  min-height: 52px;
+  border: 1px solid #d5b98c;
+  border-radius: 8px;
+  padding: 0 16px;
+  background: #fffdf8;
+  color: #2a1208;
+  font: inherit;
+}
+
+input:focus {
+  border-color: #6e3517;
+  outline: 3px solid rgba(110, 53, 23, 0.16);
+}
+
+button {
+  min-height: 52px;
+  border: 0;
+  border-radius: 999px;
+  background: #6e3517;
+  color: #fff4df;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18);
+  position: relative;
+  z-index: 1;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+button:hover:not(:disabled) {
+  background: #5a2a11;
+}
+
+.mensagem {
+  margin: 0;
+  padding: 13px 14px;
+  border-radius: 8px;
+  background: #ead4b2;
+  color: #3a190a;
+  font-weight: 900;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 700px) {
+  .cadastrar-se {
+    padding: 16px;
+  }
+
+  form {
+    padding: 28px 22px;
+  }
+}
