@@ -1,0 +1,23 @@
+# Node / Angular
+node_modules/
+dist/
+.angular/
+coverage/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Environment files
+.env
+.env.*
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.history/
+
+# Generated visual drafts not used by the selected layout
+barista-cafe-preview.png
+coffee-beans-bg.png
