@@ -15,7 +15,7 @@ services:
       POSTGRES_PASSWORD: app_pass
 
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -60,7 +60,7 @@ services:
     restart: always
 
     environment:
-      # Garante que o Angular CLI está no PATH
+      # Garante que o Angular CLI esta no PATH
       PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/app/node_modules/.bin
 
     ports:
@@ -91,7 +91,7 @@ services:
     restart: always
 
     volumes:
-      - ./php-api/cafefinance-php/public:/var/www/html
+      - ./php-api/cafefinance-php:/var/www/html
 
     expose:
       - "80"
