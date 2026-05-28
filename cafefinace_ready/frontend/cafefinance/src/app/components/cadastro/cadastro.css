@@ -101,9 +101,12 @@ h1 {
   padding: 34px 48px 42px;
 }
 
-label {
+.form-group {
   display: grid;
   gap: 8px;
+}
+
+label {
   color: #301508;
   font-weight: 900;
 }
@@ -124,7 +127,10 @@ input {
   min-height: 52px;
   display: grid;
   place-items: center;
+  border: 0;
   border-radius: 999px;
+  cursor: pointer;
+  font: inherit;
   font-weight: 900;
   text-decoration: none;
 }
@@ -136,9 +142,24 @@ input {
   box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18);
 }
 
+.primary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
 .secondary-action {
   background: #ead4b2;
   color: #3a190a;
+}
+
+.mensagem {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #d5b98c;
+  border-radius: 8px;
+  background: #ead4b2;
+  color: #3a190a;
+  font-weight: 900;
 }
 
 @media (max-width: 700px) {
