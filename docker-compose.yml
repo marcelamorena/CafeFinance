@@ -93,6 +93,9 @@ services:
     volumes:
       - ./php-api/cafefinance-php:/var/www/html
 
+    ports:
+      - "8081:80"
+
     expose:
       - "80"
 

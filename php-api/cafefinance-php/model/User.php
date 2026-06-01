@@ -24,6 +24,16 @@ class User
         return $user ?: null;
     }
 
+    public function findLoginByEmail(string $email): ?array
+    {
+        $stmt = $this->connection->prepare('SELECT id, name, email, password_hash FROM users WHERE email = :email');
+        $stmt->execute(['email' => $email]);
+
+        $user = $stmt->fetch();
+
+        return $user ?: null;
+    }
+
     public function create(string $name, string $email, string $password): array
     {
         // A senha nunca deve ser salva em texto puro: usamos hash seguro do PHP.
@@ -45,6 +55,15 @@ class User
     private function ensureSchema(): void
     {
         // Temporario para estudo: em projetos profissionais, use migrations.
+        $this->connection->exec('
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                email VARCHAR(100) NOT NULL UNIQUE,
+                password_hash VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ');
         $this->connection->exec('ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255)');
         $this->connection->exec('CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users(email)');
     }

@@ -2,7 +2,7 @@
 
 // Entrada unica da API: todas as requisicoes passam por este arquivo.
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: http://localhost');
+header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 

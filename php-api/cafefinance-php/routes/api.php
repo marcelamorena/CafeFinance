@@ -19,8 +19,8 @@ if ($path === '/' && $method === 'GET') {
 if ($path === '/cadastro' && $method === 'POST') {
     (new UserController())->register();
 }
-if ($path ==='/login'&& $method ==='POST'){
-    (new userController())->Login();
+if ($path === '/login' && $method === 'POST') {
+    (new UserController())->login();
 }
 
 // Qualquer rota nao mapeada cai aqui.

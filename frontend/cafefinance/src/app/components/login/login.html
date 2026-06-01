@@ -2,19 +2,20 @@
   <section class="phone-frame">
     <header class="topbar">
       <span class="breadcrumb"></span>
-      <a class="nav-link" routerLink="/home">Entrar</a>
+      <a class="nav-link" routerLink="/cadastro">Criar conta</a>
     </header>
 
     <section class="brand-card">
-      <div class="brand-mark">&#9749;</div>
+      <span class="brand-logo-frame">
+        <img class="brand-logo" src="/barista-cafe.png" alt="Caf&eacute;" />
+      </span>
       <div>
         <p class="eyebrow">Caf&eacute;Finance</p>
-        <h1>Controle seu bule financeiro</h1>
+        <h1>Seu dinheiro no ponto certo</h1>
       </div>
     </section>
 
-    <div  class="login-card">
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <form class="login-card" [formGroup]="loginForm" (ngSubmit)="entrar()">
       <label>
         E-mail
         <input type="email" formControlName="email" placeholder="seuemail@exemplo.com" />
@@ -22,21 +23,22 @@
 
       <label>
         Senha
-        <input type="password" formControlName="password" placeholder="Digite sua senha" />
+        <input type="password" formControlName="senha" placeholder="Digite sua senha" />
       </label>
-      
-      <button type="submit">Entrar</button>
+
+      <p class="feedback-message" *ngIf="mensagem">{{ mensagem }}</p>
+
+      <button class="primary-action" type="submit" [disabled]="carregando">
+        {{ carregando ? 'Entrando...' : 'Entrar' }}
+      </button>
       <a class="secondary-action" routerLink="/cadastro">Criar conta</a>
     </form>
-  </div>
-
-  
 
     <section class="barista-tip">
-      <span>&#9749;</span>
+      <img src="/barista-cafe.png" alt="" />
       <div>
         <strong>Dica do Barista</strong>
-        <p>Organize gastos, rateios e metas antes que o caf&eacute; esfrie.</p>
+        <p>Organize entradas, sa&iacute;das e metas com a calma de um bom caf&eacute;.</p>
       </div>
     </section>
   </section>

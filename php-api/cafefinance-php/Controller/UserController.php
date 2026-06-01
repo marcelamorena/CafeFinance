@@ -76,11 +76,11 @@ class UserController
     }
 
 
-    public function Login(): void {
+    public function login(): void
+    {
+        $body = json_decode(file_get_contents('php://input'), true);
 
-    $body = json_decode(file_get_contents('php://input'), true);
-
-    if (!is_array($body)) {
+        if (!is_array($body)) {
             $this->respond(400, [
                 'success' => false,
                 'message' => 'JSON invalido.'
@@ -88,9 +88,9 @@ class UserController
         }
 
         $email = trim($body['email'] ?? '');
-        $password = trim($body['password'] ?? '');
+        $password = trim($body['senha'] ?? $body['password'] ?? '');
 
-        if($email === '' || $password === ''){
+        if ($email === '' || $password === '') {
             $this->respond(400, [
                 'success' => false,
                 'message' => 'Preencha todos os campos.'
@@ -104,10 +104,31 @@ class UserController
             ]);
         }
 
+        try {
+            $user = $this->userModel->findLoginByEmail($email);
 
+            if (!$user || !password_verify($password, $user['password_hash'])) {
+                $this->respond(401, [
+                    'success' => false,
+                    'message' => 'E-mail ou senha incorretos.'
+                ]);
+            }
 
-
-
+            $this->respond(200, [
+                'success' => true,
+                'message' => 'Login realizado com sucesso.',
+                'user' => [
+                    'id' => (int) $user['id'],
+                    'name' => $user['name'],
+                    'email' => $user['email']
+                ]
+            ]);
+        } catch (Throwable $erro) {
+            $this->respond(500, [
+                'success' => false,
+                'message' => 'Erro ao realizar login.'
+            ]);
+        }
     }
 
     private function respond(int $statusCode, array $data): void

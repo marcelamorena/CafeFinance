@@ -1,11 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 
 import { AuthService, CadastroRequest } from '../../services/auth.service';
 
 @Component({
   selector: 'app-cadastro',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './cadastro.html',
   styleUrl: './cadastro.css',
 })
@@ -19,6 +20,9 @@ export class Cadastro {
     password: new FormControl(''),
     confirmarSenha: new FormControl(''),
   });
+
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   cadastro() {
     this.mensagem = '';
@@ -44,6 +48,7 @@ export class Cadastro {
 
         if (resposta.success) {
           this.cadastroForm.reset();
+          this.router.navigate(['/perfil']);
         }
       },
       error: (erro) => {
@@ -52,6 +57,4 @@ export class Cadastro {
       },
     });
   }
-
-  private readonly authService = inject(AuthService);
 }
