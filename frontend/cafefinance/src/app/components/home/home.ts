@@ -9,6 +9,10 @@ interface CategoriaOpcao {
   icone: string;
   acao?: 'expandir' | 'recolher';
 }
+import { Component, OnInit, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
+
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -151,5 +155,19 @@ export class Home {
     } catch {
       return '';
     }
+  }
+export class Home implements OnInit {
+  nomeUsuario = '';
+  sessaoDebug = '';
+
+  private readonly authService = inject(AuthService);
+
+  ngOnInit() {
+    this.authService.perfil().subscribe({
+      next: (resposta) => {
+        this.nomeUsuario = resposta.user?.name ?? '';
+        this.sessaoDebug = JSON.stringify(resposta.session, null, 2);
+      },
+    });
   }
 }

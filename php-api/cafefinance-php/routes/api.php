@@ -23,6 +23,14 @@ if ($path === '/login' && $method === 'POST') {
     (new UserController())->login();
 }
 
+if ($path === '/perfil' && $method === 'GET') {
+    (new UserController())->perfil();
+}
+
+if ($path === '/logout' && $method === 'POST') {
+    (new UserController())->logout();
+}
+
 // Qualquer rota nao mapeada cai aqui.
 http_response_code(404);
 echo json_encode([

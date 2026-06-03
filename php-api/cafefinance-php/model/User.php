@@ -34,6 +34,18 @@ class User
         return $user ?: null;
     }
 
+    public function findById(int $id): ?array
+    {
+        $stmt = $this->connection->prepare('SELECT id, name, email FROM users WHERE id = :id');
+        $stmt->execute([
+            'id' => $id,
+        ]);
+
+        $user = $stmt->fetch();
+
+        return $user ?: null;
+    }
+
     public function create(string $name, string $email, string $password): array
     {
         // A senha nunca deve ser salva em texto puro: usamos hash seguro do PHP.
@@ -50,6 +62,11 @@ class User
         ]);
 
         return $stmt->fetch();
+    }
+
+    public function findByEmailForLogin(string $email): ?array
+    {
+        return $this->findLoginByEmail($email);
     }
 
     private function ensureSchema(): void

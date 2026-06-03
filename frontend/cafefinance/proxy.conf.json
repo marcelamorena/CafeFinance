@@ -1,0 +1,7 @@
+{
+  "/api": {
+    "target": "http://nginx",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
