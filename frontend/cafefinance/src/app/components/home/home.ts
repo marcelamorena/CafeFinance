@@ -1,6 +1,8 @@
-import { Component, inject } from '@angular/core';
 import { NgFor, NgIf } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+
+import { AuthService } from '../../services/auth.service';
 
 type TipoMovimentacao = 'saida' | 'entrada';
 
@@ -16,12 +18,13 @@ interface CategoriaOpcao {
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home {
-  private router = inject(Router);
+export class Home implements OnInit {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   hoje = this.formatarData(new Date());
   valorRegistro = '';
-  nomeUsuario = this.obterNomeUsuario();
+  nomeUsuario = '';
   tipoMovimentacao: TipoMovimentacao = 'saida';
   categoriaSelecionada = 'Mercado';
   mostrarCategoriasExtrasSaida = false;
@@ -30,30 +33,30 @@ export class Home {
   totalSaidas = 'R$ 1.480,00';
 
   registrosRecentes = [
-    { icone: '&#128722;', titulo: 'Mercado', categoria: 'Alimentação', valor: '- R$ 186,40' },
-    { icone: '&#128188;', titulo: 'Salário', categoria: 'Entrada', valor: '+ R$ 3.200,00' },
-    { icone: '&#128652;', titulo: 'Combustível', categoria: 'Transporte', valor: '- R$ 120,00' },
+    { icone: '&#128722;', titulo: 'Mercado', categoria: 'Alimentacao', valor: '- R$ 186,40' },
+    { icone: '&#128188;', titulo: 'Salario', categoria: 'Entrada', valor: '+ R$ 3.200,00' },
+    { icone: '&#128652;', titulo: 'Combustivel', categoria: 'Transporte', valor: '- R$ 120,00' },
   ];
 
   gastosPorCategoria = [
-    { nome: 'Alimentação', percentual: 68, valor: 'R$ 520,00' },
+    { nome: 'Alimentacao', percentual: 68, valor: 'R$ 520,00' },
     { nome: 'Transporte', percentual: 44, valor: 'R$ 310,00' },
     { nome: 'Lazer', percentual: 30, valor: 'R$ 180,00' },
   ];
 
   categoriasSaida: CategoriaOpcao[] = [
     { nome: 'Mercado', icone: '&#128722;' },
-    { nome: 'Alimenta\u00e7\u00e3o', icone: '&#127860;' },
+    { nome: 'Alimentacao', icone: '&#127860;' },
     { nome: 'Transporte', icone: '&#128652;' },
     { nome: 'Aluguel', icone: '&#127968;' },
     { nome: 'Contas', icone: '&#128161;' },
-    { nome: 'Sa\u00fade', icone: '&#128138;' },
+    { nome: 'Saude', icone: '&#128138;' },
     { nome: 'Lazer', icone: '&#127918;' },
     { nome: 'Mais', icone: '+', acao: 'expandir' },
   ];
 
   categoriasExtrasSaida: CategoriaOpcao[] = [
-    { nome: 'Educa\u00e7\u00e3o', icone: '&#127891;' },
+    { nome: 'Educacao', icone: '&#127891;' },
     { nome: 'Assinaturas', icone: '&#128240;' },
     { nome: 'Investimentos', icone: '&#128201;' },
     { nome: 'Economia', icone: '&#128176;' },
@@ -63,7 +66,7 @@ export class Home {
   ];
 
   categoriasEntrada: CategoriaOpcao[] = [
-    { nome: 'Sal\u00e1rio', icone: '&#128188;' },
+    { nome: 'Salario', icone: '&#128188;' },
     { nome: 'Freelance', icone: '&#128187;' },
     { nome: 'Pix', icone: '&#128179;' },
     { nome: 'Reembolso', icone: '&#128260;' },
@@ -72,6 +75,10 @@ export class Home {
     { nome: 'Venda', icone: '&#128176;' },
     { nome: 'Outro', icone: '...' },
   ];
+
+  ngOnInit(): void {
+    this.carregarPerfil();
+  }
 
   get categoriasAtuais(): CategoriaOpcao[] {
     if (this.tipoMovimentacao === 'entrada') {
@@ -84,13 +91,13 @@ export class Home {
   }
 
   get textoBotaoSalvar(): string {
-    return this.tipoMovimentacao === 'saida' ? 'Salvar sa\u00edda' : 'Salvar entrada';
+    return this.tipoMovimentacao === 'saida' ? 'Salvar saida' : 'Salvar entrada';
   }
 
   get dicaRegistro(): string {
     return this.tipoMovimentacao === 'saida'
-      ? 'Registre suas sa\u00eddas para entender onde seu caf\u00e9 financeiro est\u00e1 esfriando.'
-      : 'Registre suas entradas para acompanhar tudo que mant\u00e9m seu caf\u00e9 rendendo.';
+      ? 'Registre suas saidas para entender onde seu cafe financeiro esta esfriando.'
+      : 'Registre suas entradas para acompanhar tudo que mantem seu cafe rendendo.';
   }
 
   selecionarTipo(tipo: TipoMovimentacao): void {
@@ -133,6 +140,29 @@ export class Home {
   }
 
   sair(): void {
+    this.authService.logout().subscribe({
+      next: () => this.finalizarSessao(),
+      error: () => this.finalizarSessao(),
+    });
+  }
+
+  private carregarPerfil(): void {
+    this.authService.perfil().subscribe({
+      next: (resposta) => {
+        const usuario = resposta.user;
+        this.nomeUsuario = usuario?.name ?? this.obterNomeUsuario();
+
+        if (usuario) {
+          localStorage.setItem('cafefinance_usuario', JSON.stringify(usuario));
+        }
+      },
+      error: () => {
+        this.nomeUsuario = this.obterNomeUsuario();
+      },
+    });
+  }
+
+  private finalizarSessao(): void {
     localStorage.removeItem('cafefinance_usuario');
     this.router.navigate(['/']);
   }

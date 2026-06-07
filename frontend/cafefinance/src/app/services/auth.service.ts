@@ -20,7 +20,7 @@ export interface CadastroResponse {
 
 export interface LoginRequest {
   email: string;
-  senha: string;
+  password: string;
 }
 
 export interface LoginResponse {
@@ -30,6 +30,20 @@ export interface LoginResponse {
     id: number;
     name: string;
     email: string;
+  };
+}
+
+export interface PerfilResponse {
+  success: boolean;
+  message: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  session?: {
+    id: string;
+    user_id: number;
   };
 }
 
@@ -46,5 +60,13 @@ export class AuthService {
 
   login(dados: LoginRequest) {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, dados);
+  }
+
+  perfil() {
+    return this.http.get<PerfilResponse>(`${this.apiUrl}/perfil`);
+  }
+
+  logout() {
+    return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/logout`, {});
   }
 }

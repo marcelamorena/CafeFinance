@@ -17,7 +17,7 @@ export class Login {
 
   loginForm = new FormGroup({
     email: new FormControl(''),
-    senha: new FormControl(''),
+    password: new FormControl(''),
   });
 
   private readonly authService = inject(AuthService);
@@ -28,8 +28,8 @@ export class Login {
 
     const dados = this.loginForm.getRawValue() as LoginRequest;
 
-    if (!dados.email || !dados.senha) {
-      this.mensagem = 'Preencha e-mail e senha.';
+    if (!dados.email || !dados.password) {
+      this.mensagem = 'Preencha todos os campos.';
       return;
     }
 
@@ -41,7 +41,7 @@ export class Login {
         this.mensagem = resposta.message;
 
         if (resposta.success) {
-          localStorage.setItem('cafefinance_usuario', JSON.stringify(resposta.user));
+          this.loginForm.reset();
           this.router.navigate(['/home']);
         }
       },
