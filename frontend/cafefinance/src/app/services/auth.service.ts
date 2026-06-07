@@ -38,7 +38,7 @@ export interface LoginResponse {
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8081';
+  private readonly apiUrl = '/api/php';
 
   registrar(dados: CadastroRequest) {
     return this.http.post<CadastroResponse>(`${this.apiUrl}/cadastro`, dados);

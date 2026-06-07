@@ -13,15 +13,17 @@
     <section class="hero-balance">
       <div>
         <p class="eyebrow">Meu saldo de caf&eacute;</p>
-        <h1>R$ 0,00</h1>
-        <p>Nenhuma movimenta&ccedil;&atilde;o cadastrada ainda.</p>
+        <h1>{{ saldoTotal }}</h1>
+        <p>Suas entradas e sa&iacute;das j&aacute; est&atilde;o organizadas para acompanhamento mensal.</p>
       </div>
 
       <div class="coffee-cup" aria-label="Indicador de saldo de caf&eacute;">
         <span class="steam steam-one"></span>
         <span class="steam steam-two"></span>
         <div class="cup-body">
-          <span class="empty-cup-label">Sem dados</span>
+          <span class="level green">Receitas</span>
+          <span class="level amber">Despesas</span>
+          <span class="level dark">Saldo</span>
         </div>
       </div>
     </section>
@@ -29,14 +31,14 @@
     <section class="grid-cards">
       <article class="metric-card">
         <p>Saldo Total</p>
-        <strong>R$ 0,00</strong>
-        <span class="empty-state">Aguardando seus registros.</span>
+        <strong>{{ saldoTotal }}</strong>
+        <span class="empty-state">Resultado positivo no per&iacute;odo.</span>
       </article>
 
       <article class="metric-card">
         <p>Entradas vs Sa&iacute;das</p>
-        <strong>R$ 0,00</strong>
-        <span class="empty-state">Sem entradas ou sa&iacute;das cadastradas.</span>
+        <strong>{{ totalEntradas }} / {{ totalSaidas }}</strong>
+        <span class="empty-state">Receitas acima das despesas cadastradas.</span>
       </article>
     </section>
 
@@ -46,12 +48,31 @@
         <a href="#novo">+ Novo</a>
       </div>
 
-      <p class="empty-panel">Nenhum registro cadastrado ainda.</p>
+      <ul class="records-list">
+        <li *ngFor="let registro of registrosRecentes">
+          <span [innerHTML]="registro.icone"></span>
+          <div>
+            <b>{{ registro.titulo }}</b>
+            <small>{{ registro.categoria }}</small>
+          </div>
+          <strong>{{ registro.valor }}</strong>
+        </li>
+      </ul>
     </section>
 
     <section class="report-card">
       <h2>Meus gastos por categoria</h2>
-      <p class="empty-panel">Os gr&aacute;ficos aparecer&atilde;o quando houver movimenta&ccedil;&otilde;es cadastradas.</p>
+      <div class="category-dashboard">
+        <article *ngFor="let gasto of gastosPorCategoria">
+          <div>
+            <strong>{{ gasto.nome }}</strong>
+            <span>{{ gasto.valor }}</span>
+          </div>
+          <i>
+            <b [style.width.%]="gasto.percentual"></b>
+          </i>
+        </article>
+      </div>
     </section>
 
     <section id="novo" class="new-record">

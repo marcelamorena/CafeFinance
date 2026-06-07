@@ -161,9 +161,6 @@ services:
       php-api:
         condition: service_healthy
 
-      python-api:
-        condition: service_healthy
-
 volumes:
   postgres_data:
   frontend_node_modules:

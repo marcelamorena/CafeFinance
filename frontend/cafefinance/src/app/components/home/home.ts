@@ -25,6 +25,21 @@ export class Home {
   tipoMovimentacao: TipoMovimentacao = 'saida';
   categoriaSelecionada = 'Mercado';
   mostrarCategoriasExtrasSaida = false;
+  saldoTotal = 'R$ 1.720,00';
+  totalEntradas = 'R$ 3.200,00';
+  totalSaidas = 'R$ 1.480,00';
+
+  registrosRecentes = [
+    { icone: '&#128722;', titulo: 'Mercado', categoria: 'Alimentação', valor: '- R$ 186,40' },
+    { icone: '&#128188;', titulo: 'Salário', categoria: 'Entrada', valor: '+ R$ 3.200,00' },
+    { icone: '&#128652;', titulo: 'Combustível', categoria: 'Transporte', valor: '- R$ 120,00' },
+  ];
+
+  gastosPorCategoria = [
+    { nome: 'Alimentação', percentual: 68, valor: 'R$ 520,00' },
+    { nome: 'Transporte', percentual: 44, valor: 'R$ 310,00' },
+    { nome: 'Lazer', percentual: 30, valor: 'R$ 180,00' },
+  ];
 
   categoriasSaida: CategoriaOpcao[] = [
     { nome: 'Mercado', icone: '&#128722;' },

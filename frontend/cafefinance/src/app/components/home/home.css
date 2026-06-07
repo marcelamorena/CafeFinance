@@ -429,6 +429,44 @@ button {
   font-weight: 700;
 }
 
+.category-dashboard {
+  display: grid;
+  gap: 12px;
+}
+
+.category-dashboard article {
+  display: grid;
+  gap: 8px;
+}
+
+.category-dashboard div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #2a1208;
+}
+
+.category-dashboard span {
+  color: #7b573f;
+  font-weight: 900;
+}
+
+.category-dashboard i {
+  height: 16px;
+  display: block;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #ead4b2;
+}
+
+.category-dashboard b {
+  height: 100%;
+  display: block;
+  border-radius: inherit;
+  background: #6e3517;
+}
+
 .floating-add {
   width: 48px;
   height: 48px;
