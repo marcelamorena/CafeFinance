@@ -47,6 +47,10 @@ export class Cadastro {
         this.mensagem = resposta.message;
 
         if (resposta.success) {
+          if (resposta.user) {
+            localStorage.setItem('cafefinance_usuario', JSON.stringify(resposta.user));
+          }
+
           this.cadastroForm.reset();
           this.router.navigate(['/perfil']);
         }

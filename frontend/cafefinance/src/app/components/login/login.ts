@@ -41,13 +41,17 @@ export class Login {
         this.mensagem = resposta.message;
 
         if (resposta.success) {
+          if (resposta.user) {
+            localStorage.setItem('cafefinance_usuario', JSON.stringify(resposta.user));
+          }
+
           this.loginForm.reset();
           this.router.navigate(['/home']);
         }
       },
       error: (erro) => {
         this.carregando = false;
-        this.mensagem = erro.error?.message ?? 'Nao foi possivel entrar.';
+        this.mensagem = erro.status === 401 ? 'E-mail ou senha incorretos.' : erro.error?.message ?? 'Nao foi possivel entrar.';
       },
     });
   }

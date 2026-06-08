@@ -1,4 +1,4 @@
-<main class="workspace">
+<main class="workspace notranslate" translate="no">
   <section class="phone-frame">
     <header class="topbar">
       <a routerLink="/" class="brand">
@@ -13,7 +13,7 @@
     <section class="hero-balance">
       <div>
         <p class="eyebrow">Meu saldo de caf&eacute;</p>
-        <h1>{{ saldoTotal }}</h1>
+        <h1 [class.negative-balance]="saldoNegativo">{{ saldoTotal }}</h1>
         <p>Suas entradas e sa&iacute;das j&aacute; est&atilde;o organizadas para acompanhamento mensal.</p>
       </div>
 
@@ -31,38 +31,120 @@
     <section class="grid-cards">
       <article class="metric-card">
         <p>Saldo Total</p>
-        <strong>{{ saldoTotal }}</strong>
-        <span class="empty-state">Resultado positivo no per&iacute;odo.</span>
+        <strong [class.negative-balance]="saldoNegativo">{{ saldoTotal }}</strong>
+        <span class="empty-state">Resultado atual do per&iacute;odo.</span>
       </article>
 
       <article class="metric-card">
         <p>Entradas vs Sa&iacute;das</p>
         <strong>{{ totalEntradas }} / {{ totalSaidas }}</strong>
-        <span class="empty-state">Receitas acima das despesas cadastradas.</span>
+        <span class="empty-state">Comparativo das movimenta&ccedil;&otilde;es cadastradas.</span>
       </article>
     </section>
 
     <section class="records-card">
       <div class="section-heading">
         <h2>&Uacute;ltimos Registros</h2>
-        <a href="#novo">+ Novo</a>
+        <button type="button" class="records-action" (click)="alternarTransacoes()">
+          <span *ngIf="mostrandoTransacoes; else verTodas">Ocultar transa&ccedil;&otilde;es</span>
+          <ng-template #verTodas>Ver todas as transa&ccedil;&otilde;es</ng-template>
+        </button>
       </div>
 
-      <ul class="records-list">
-        <li *ngFor="let registro of registrosRecentes">
-          <span [innerHTML]="registro.icone"></span>
-          <div>
-            <b>{{ registro.titulo }}</b>
-            <small>{{ registro.categoria }}</small>
+      <ul class="records-list" *ngIf="registrosRecentes.length; else semRegistros">
+        <li
+          *ngFor="let registro of registrosRecentes"
+          [class.income-record]="registro.tipo === 'entrada'"
+          [class.expense-record]="registro.tipo === 'saida'"
+        >
+          <span class="record-icon" [innerHTML]="registro.icone"></span>
+          <div class="record-info">
+            <div>
+              <b>{{ registro.titulo }}</b>
+              <small>{{ registro.data }}</small>
+            </div>
+            <p>
+              <span>{{ registro.tipoLabel }}</span>
+              <span>{{ registro.categoria }}</span>
+            </p>
           </div>
-          <strong>{{ registro.valor }}</strong>
+          <strong
+            class="record-value"
+            [class.positive-value]="registro.tipo === 'entrada'"
+            [class.negative-value]="registro.tipo === 'saida'"
+          >
+            {{ registro.valor }}
+          </strong>
         </li>
       </ul>
+      <ng-template #semRegistros>
+        <p class="empty-panel">Nenhum registro cadastrado ainda.</p>
+      </ng-template>
+
+      <section class="transactions-panel" *ngIf="mostrandoTransacoes">
+        <p class="empty-panel" *ngIf="carregandoTransacoes">Carregando transa&ccedil;&otilde;es...</p>
+        <p class="record-feedback error" *ngIf="mensagemTransacoes">{{ mensagemTransacoes }}</p>
+
+        <ng-container *ngIf="!carregandoTransacoes && transacoesPorMes.length; else semTransacoes">
+          <article class="month-group" *ngFor="let grupo of transacoesPorMes">
+            <button
+              type="button"
+              class="month-toggle"
+              [class.active]="mesAberto === grupo.chave"
+              [attr.aria-expanded]="mesAberto === grupo.chave"
+              (click)="alternarMesTransacoes(grupo.chave)"
+            >
+              <span>{{ grupo.mes }}</span>
+            </button>
+
+            <div class="month-details" *ngIf="mesAberto === grupo.chave">
+              <div class="month-summary">
+                <span>Entradas {{ grupo.totalEntradas }}</span>
+                <span>Sa&iacute;das {{ grupo.totalSaidas }}</span>
+                <strong [class.negative-balance]="grupo.saldoNegativo">Saldo {{ grupo.saldo }}</strong>
+              </div>
+
+              <ul class="records-list month-list">
+                <li
+                  *ngFor="let transacao of grupo.transacoes"
+                  [class.income-record]="transacao.tipo === 'entrada'"
+                  [class.expense-record]="transacao.tipo === 'saida'"
+                >
+                  <span class="record-icon" [innerHTML]="transacao.icone"></span>
+                  <div class="record-info">
+                    <div>
+                      <b>{{ transacao.titulo }}</b>
+                      <small>{{ transacao.data }}</small>
+                    </div>
+                    <p>
+                      <span>{{ transacao.tipoLabel }}</span>
+                      <span>{{ transacao.categoria }}</span>
+                    </p>
+                  </div>
+                  <strong
+                    class="record-value"
+                    [class.positive-value]="transacao.tipo === 'entrada'"
+                    [class.negative-value]="transacao.tipo === 'saida'"
+                  >
+                    {{ transacao.valor }}
+                  </strong>
+                </li>
+              </ul>
+            </div>
+          </article>
+        </ng-container>
+
+        <ng-template #semTransacoes>
+          <p class="empty-panel" *ngIf="!carregandoTransacoes && !mensagemTransacoes">
+            Nenhuma transa&ccedil;&atilde;o registrada ainda.
+          </p>
+        </ng-template>
+      </section>
     </section>
 
     <section class="report-card">
       <h2>Meus gastos por categoria</h2>
-      <div class="category-dashboard">
+      <div class="category-dashboard" *ngIf="gastosPorCategoria.length; else semCategorias">
         <article *ngFor="let gasto of gastosPorCategoria">
           <div>
             <strong>{{ gasto.nome }}</strong>
@@ -73,21 +155,16 @@
           </i>
         </article>
       </div>
+      <ng-template #semCategorias>
+        <p class="empty-panel">Os gastos por categoria vao aparecer aqui depois do primeiro registro de saida.</p>
+      </ng-template>
     </section>
 
-    <section id="novo" class="new-record">
+    <form id="novo" class="new-record" (submit)="salvarRegistro(); $event.preventDefault()">
       <span class="floating-add">+</span>
       <h2>Adicionar novo registro</h2>
 
       <div class="type-toggle" aria-label="Tipo de movimenta&ccedil;&atilde;o">
-        <button
-          type="button"
-          [class.active]="tipoMovimentacao === 'saida'"
-          [attr.aria-pressed]="tipoMovimentacao === 'saida'"
-          (click)="selecionarTipo('saida')"
-        >
-          Sa&iacute;da
-        </button>
         <button
           type="button"
           [class.active]="tipoMovimentacao === 'entrada'"
@@ -95,6 +172,14 @@
           (click)="selecionarTipo('entrada')"
         >
           Entrada
+        </button>
+        <button
+          type="button"
+          [class.active]="tipoMovimentacao === 'saida'"
+          [attr.aria-pressed]="tipoMovimentacao === 'saida'"
+          (click)="selecionarTipo('saida')"
+        >
+          Sa&iacute;da
         </button>
       </div>
 
@@ -114,7 +199,7 @@
             />
           </div>
         </label>
-        <label>Data<input type="date" [value]="hoje" [max]="hoje" /></label>
+        <label>Data<input type="date" [value]="dataRegistro" [max]="hoje" (input)="atualizarDataRegistro($event)" /></label>
       </div>
 
       <div class="categories">
@@ -132,14 +217,19 @@
         </button>
       </div>
 
-      <label>Descri&ccedil;&atilde;o<textarea></textarea></label>
+      <label>
+        Descri&ccedil;&atilde;o
+        <textarea [value]="descricaoRegistro" (input)="atualizarDescricaoRegistro($event)"></textarea>
+      </label>
 
       <aside class="suggestion">
         <span>&#9749;</span>
         <p><strong>Sugest&atilde;o do Barista</strong> {{ dicaRegistro }}</p>
       </aside>
 
-      <button class="save-button">{{ textoBotaoSalvar }}</button>
-    </section>
+      <p class="record-feedback" [class.error]="registroComErro" *ngIf="mensagemRegistro">{{ mensagemRegistro }}</p>
+
+      <button class="save-button" type="submit" [disabled]="carregandoRegistro">{{ textoBotaoSalvar }}</button>
+    </form>
   </section>
 </main>

@@ -171,7 +171,11 @@ input {
 }
 
 .feedback-message {
-  margin: 0;
+  margin: -2px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #c97b52;
+  border-radius: 8px;
+  background: #fff0e8;
   color: #7e3418;
   font-size: 0.9rem;
   font-weight: 900;

@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../Controller/UserController.php';
+require_once __DIR__ . '/../Controller/MovimentacaoController.php';
 
 // Roteador simples: identifica caminho e metodo HTTP da requisicao.
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
@@ -29,6 +30,18 @@ if ($path === '/perfil' && $method === 'GET') {
 
 if ($path === '/logout' && $method === 'POST') {
     (new UserController())->logout();
+}
+
+if ($path === '/movimentacoes' && $method === 'POST') {
+    (new MovimentacaoController())->store();
+}
+
+if ($path === '/movimentacoes' && $method === 'GET') {
+    (new MovimentacaoController())->index();
+}
+
+if ($path === '/movimentacoes/resumo' && $method === 'GET') {
+    (new MovimentacaoController())->resumo();
 }
 
 // Qualquer rota nao mapeada cai aqui.

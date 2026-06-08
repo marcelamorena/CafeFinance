@@ -118,6 +118,10 @@ h1 {
   line-height: 0.94;
 }
 
+.negative-balance {
+  color: #b3261e !important;
+}
+
 h2 {
   margin-bottom: 16px;
   color: #2a1208;
@@ -266,11 +270,19 @@ h2 {
   margin: 0;
 }
 
-.section-heading a {
+.section-heading a,
+.records-action {
   color: #6e3517;
   font-size: 0.85rem;
   font-weight: 900;
   text-decoration: none;
+}
+
+.records-action {
+  min-height: auto;
+  padding: 0;
+  background: transparent;
+  color: #6e3517;
 }
 
 button {
@@ -281,6 +293,188 @@ button {
   color: #fff;
   font: inherit;
   cursor: pointer;
+}
+
+.records-list {
+  display: grid;
+  gap: 10px;
+  max-height: 340px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+}
+
+.records-list li {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #ead4b2;
+  border-radius: 8px;
+  background: #fffaf0;
+}
+
+.record-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ead4b2;
+  color: #3a190a;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.income-record .record-icon {
+  background: #e3f0d7;
+  color: #2f5f22;
+}
+
+.expense-record .record-icon {
+  background: #f5dfce;
+  color: #803b19;
+}
+
+.record-info {
+  min-width: 0;
+}
+
+.record-info div,
+.month-summary {
+  display: flex;
+  align-items: center;
+}
+
+.record-info div {
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.record-info b {
+  overflow: hidden;
+  color: #2a1208;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-info small {
+  color: #7b573f;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.record-info p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 0;
+}
+
+.record-info p span {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f1dfc0;
+  color: #5b321e;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.record-value {
+  color: #2a1208;
+  white-space: nowrap;
+}
+
+.income-record .record-value,
+.record-value.positive-value {
+  color: #2f6b24;
+}
+
+.expense-record .record-value,
+.record-value.negative-value {
+  color: #b3261e;
+}
+
+.transactions-panel {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #ead4b2;
+}
+
+.month-group {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.month-toggle {
+  min-height: 92px;
+  width: 148px;
+  padding: 14px;
+  border: 1px solid #d5b98c;
+  border-radius: 8px;
+  background: #ead4b2;
+  color: #2a1208;
+  text-align: center;
+}
+
+.month-toggle span {
+  display: block;
+  font-size: 1rem;
+  font-weight: 900;
+  text-transform: capitalize;
+}
+
+.month-toggle.active {
+  border-color: #6e3517;
+  background: #6e3517;
+  color: #fff8ea;
+}
+
+.month-details {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  max-height: min(430px, 48vh);
+  padding: 14px;
+  overflow: hidden;
+  border: 1px solid #ead4b2;
+  border-radius: 8px;
+  background: rgba(234, 212, 178, 0.26);
+}
+
+.month-summary {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.month-summary span,
+.month-summary strong {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #fff8ea;
+  color: #5b321e;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.month-summary strong.negative-balance {
+  background: #fde7e5;
+}
+
+.month-list {
+  max-height: none;
+  min-height: 0;
+  padding-right: 6px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .report-content {
@@ -484,6 +678,28 @@ textarea {
 
 .save-button {
   width: 100%;
+}
+
+.save-button:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+.record-feedback {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #86a46b;
+  border-radius: 8px;
+  background: #eef6e8;
+  color: #345222;
+  font-weight: 900;
+  text-align: center;
+}
+
+.record-feedback.error {
+  border-color: #c97b52;
+  background: #fff0e8;
+  color: #7e3418;
 }
 
 @media (max-width: 900px) {

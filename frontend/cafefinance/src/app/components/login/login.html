@@ -23,10 +23,10 @@
 
       <label>
         Senha
-        <input type="password" formControlName="senha" placeholder="Digite sua senha" />
+        <input type="password" formControlName="password" placeholder="Digite sua senha" />
       </label>
 
-      <p class="feedback-message" *ngIf="mensagem">{{ mensagem }}</p>
+      <p class="feedback-message" role="alert" *ngIf="mensagem">{{ mensagem }}</p>
 
       <button class="primary-action" type="submit" [disabled]="carregando">
         {{ carregando ? 'Entrando...' : 'Entrar' }}
