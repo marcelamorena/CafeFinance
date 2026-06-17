@@ -6,6 +6,7 @@
         <strong>Bom caf&eacute;<ng-container *ngIf="nomeUsuario">, {{ nomeUsuario }}</ng-container>!</strong>
       </a>
       <nav>
+        <a routerLink="/economias">Economias</a>
         <button type="button" class="logout-link" (click)="sair()">Sair</button>
       </nav>
     </header>
@@ -14,16 +15,17 @@
       <div>
         <p class="eyebrow">Meu saldo de caf&eacute;</p>
         <h1 [class.negative-balance]="saldoNegativo">{{ saldoTotal }}</h1>
-        <p>Suas entradas e sa&iacute;das j&aacute; est&atilde;o organizadas para acompanhamento mensal.</p>
+        <p>{{ textoResumoEconomia }}</p>
+        <a class="hero-link" routerLink="/economias">Ver economias</a>
       </div>
 
-      <div class="coffee-cup" aria-label="Indicador de saldo de caf&eacute;">
+      <div class="coffee-cup" aria-label="Indicador de economia">
         <span class="steam steam-one"></span>
         <span class="steam steam-two"></span>
         <div class="cup-body">
-          <span class="level green">Receitas</span>
-          <span class="level amber">Despesas</span>
-          <span class="level dark">Saldo</span>
+          <span class="cup-fill" [style.height.%]="progressoEconomia"></span>
+          <strong>{{ progressoEconomia }}%</strong>
+          <small>{{ textoMetaXicara }}</small>
         </div>
       </div>
     </section>
@@ -65,7 +67,8 @@
             </div>
             <p>
               <span>{{ registro.tipoLabel }}</span>
-              <span>{{ registro.categoria }}</span>
+              <span>{{ registro.categoriaLabel }}</span>
+              <span *ngIf="registro.parcela">{{ registro.parcela }}</span>
             </p>
           </div>
           <strong
@@ -75,6 +78,17 @@
           >
             {{ registro.valor }}
           </strong>
+          <div class="record-actions">
+            <button type="button" class="edit-record-button" (click)="editarRegistro(registro)">Editar</button>
+            <button
+              type="button"
+              class="delete-record-button"
+              [disabled]="deletandoRegistroId === registro.id"
+              (click)="solicitarExclusao(registro)"
+            >
+              {{ deletandoRegistroId === registro.id ? 'Excluindo...' : 'Excluir' }}
+            </button>
+          </div>
         </li>
       </ul>
       <ng-template #semRegistros>
@@ -86,7 +100,7 @@
         <p class="record-feedback error" *ngIf="mensagemTransacoes">{{ mensagemTransacoes }}</p>
 
         <ng-container *ngIf="!carregandoTransacoes && transacoesPorMes.length; else semTransacoes">
-          <article class="month-group" *ngFor="let grupo of transacoesPorMes">
+          <article class="month-group" [class.open-month]="mesAberto === grupo.chave" *ngFor="let grupo of transacoesPorMes">
             <button
               type="button"
               class="month-toggle"
@@ -116,10 +130,11 @@
                       <b>{{ transacao.titulo }}</b>
                       <small>{{ transacao.data }}</small>
                     </div>
-                    <p>
-                      <span>{{ transacao.tipoLabel }}</span>
-                      <span>{{ transacao.categoria }}</span>
-                    </p>
+                  <p>
+                    <span>{{ transacao.tipoLabel }}</span>
+                    <span>{{ transacao.categoriaLabel }}</span>
+                    <span *ngIf="transacao.parcela">{{ transacao.parcela }}</span>
+                  </p>
                   </div>
                   <strong
                     class="record-value"
@@ -128,6 +143,17 @@
                   >
                     {{ transacao.valor }}
                   </strong>
+                  <div class="record-actions">
+                    <button type="button" class="edit-record-button" (click)="editarRegistro(transacao)">Editar</button>
+                    <button
+                      type="button"
+                      class="delete-record-button"
+                      [disabled]="deletandoRegistroId === transacao.id"
+                      (click)="solicitarExclusao(transacao)"
+                    >
+                      {{ deletandoRegistroId === transacao.id ? 'Excluindo...' : 'Excluir' }}
+                    </button>
+                  </div>
                 </li>
               </ul>
             </div>
@@ -156,13 +182,21 @@
         </article>
       </div>
       <ng-template #semCategorias>
-        <p class="empty-panel">Os gastos por categoria vao aparecer aqui depois do primeiro registro de saida.</p>
+        <p class="empty-panel">Os gastos por categoria v&atilde;o aparecer aqui depois do primeiro registro de sa&iacute;da.</p>
       </ng-template>
     </section>
 
     <form id="novo" class="new-record" (submit)="salvarRegistro(); $event.preventDefault()">
       <span class="floating-add">+</span>
-      <h2>Adicionar novo registro</h2>
+      <h2>{{ registroEditandoId ? 'Editar registro' : 'Adicionar novo registro' }}</h2>
+
+      <p class="edit-mode-message" *ngIf="registroEditandoId">
+        <ng-container *ngIf="registroEditandoParcelamento; else edicaoSimples">
+          Esta edi&ccedil;&atilde;o altera a compra parcelada inteira. Informe o valor total, a quantidade de parcelas e a data da primeira parcela.
+        </ng-container>
+        <ng-template #edicaoSimples>Ajuste os dados e salve a edi&ccedil;&atilde;o.</ng-template>
+        <span *ngIf="registroEditandoParcela">{{ registroEditandoParcela }}</span>
+      </p>
 
       <div class="type-toggle" aria-label="Tipo de movimenta&ccedil;&atilde;o">
         <button
@@ -185,7 +219,7 @@
 
       <div class="form-grid">
         <label>
-          Valor
+          {{ compraParcelada || registroEditandoParcelamento ? 'Valor total' : 'Valor' }}
           <div class="money-field">
             <span>R$</span>
             <input
@@ -199,7 +233,35 @@
             />
           </div>
         </label>
-        <label>Data<input type="date" [value]="dataRegistro" [max]="hoje" (input)="atualizarDataRegistro($event)" /></label>
+        <label>
+          {{ registroEditandoParcelamento ? 'Data da primeira parcela' : 'Data' }}
+          <input type="date" [value]="dataRegistro" [max]="hoje" (input)="atualizarDataRegistro($event)" />
+        </label>
+      </div>
+
+      <div class="installment-box" *ngIf="tipoMovimentacao === 'saida' && (!registroEditandoId || registroEditandoParcelamento)">
+        <label class="installment-toggle" *ngIf="!registroEditandoId">
+          <input type="checkbox" [checked]="compraParcelada" (change)="atualizarCompraParcelada($event)" />
+          <span>Compra parcelada</span>
+        </label>
+
+        <p class="installment-edit-note" *ngIf="registroEditandoParcelamento">
+          O sistema vai recalcular o valor de cada parcela automaticamente.
+        </p>
+
+        <div class="installment-fields" *ngIf="compraParcelada || registroEditandoParcelamento">
+          <label>
+            Parcelas
+            <input
+              type="number"
+              min="2"
+              max="60"
+              [value]="quantidadeParcelas"
+              (input)="atualizarQuantidadeParcelas($event)"
+            />
+          </label>
+          <p *ngIf="valorParcelaEstimado">Aprox. {{ valorParcelaEstimado }} por m&ecirc;s</p>
+        </div>
       </div>
 
       <div class="categories">
@@ -213,13 +275,19 @@
           (click)="selecionarCategoria(categoria)"
         >
           <strong [innerHTML]="categoria.icone"></strong>
-          <span>{{ categoria.nome }}</span>
+          <span>{{ categoria.label || categoria.nome }}</span>
         </button>
       </div>
 
       <label>
-        Descri&ccedil;&atilde;o
-        <textarea [value]="descricaoRegistro" (input)="atualizarDescricaoRegistro($event)"></textarea>
+        Descri&ccedil;&atilde;o <span class="optional-label">(opcional)</span>
+        <textarea
+          [value]="descricaoRegistro"
+          placeholder="Ex: compra do m&ecirc;s, boleto de luz, freelance da semana"
+          rows="3"
+          (input)="atualizarDescricaoRegistro($event)"
+        ></textarea>
+        <small class="field-hint">{{ descricaoPalavras }}/{{ limitePalavrasDescricao }} palavras</small>
       </label>
 
       <aside class="suggestion">
@@ -230,6 +298,32 @@
       <p class="record-feedback" [class.error]="registroComErro" *ngIf="mensagemRegistro">{{ mensagemRegistro }}</p>
 
       <button class="save-button" type="submit" [disabled]="carregandoRegistro">{{ textoBotaoSalvar }}</button>
+      <button
+        class="cancel-edit-button"
+        type="button"
+        *ngIf="registroEditandoId"
+        [disabled]="carregandoRegistro"
+        (click)="cancelarEdicao()"
+      >
+        Cancelar edi&ccedil;&atilde;o
+      </button>
     </form>
+
+    <section class="confirm-layer" *ngIf="registroParaExcluir as registroExclusao" role="dialog" aria-modal="true">
+      <article class="confirm-box">
+        <h2>Confirmar exclus&atilde;o</h2>
+        <p *ngIf="!registroExclusao.parcelamentoId">Tem certeza que deseja excluir este registro?</p>
+        <p *ngIf="registroExclusao.parcelamentoId">
+          Tem certeza que deseja excluir esta compra parcelada?
+          Todas as {{ registroExclusao.totalParcelas || '' }} parcelas ser&atilde;o removidas.
+        </p>
+        <div class="confirm-actions">
+          <button type="button" class="cancel-edit-button" [disabled]="deletandoRegistroId" (click)="cancelarExclusao()">Cancelar</button>
+          <button type="button" class="save-button" [disabled]="deletandoRegistroId" (click)="confirmarExclusao()">
+            {{ deletandoRegistroId ? 'Excluindo...' : 'Confirmar' }}
+          </button>
+        </div>
+      </article>
+    </section>
   </section>
 </main>

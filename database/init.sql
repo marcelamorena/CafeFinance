@@ -24,10 +24,30 @@ CREATE UNIQUE INDEX IF NOT EXISTS categorias_usuario_unique
     ON categorias (user_id, nome, tipo)
     WHERE user_id IS NOT NULL;
 
+CREATE TABLE IF NOT EXISTS parcelamentos (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    categoria_id INTEGER REFERENCES categorias(id) ON DELETE SET NULL,
+    descricao TEXT,
+    valor_total NUMERIC(12, 2) NOT NULL CHECK (valor_total > 0),
+    valor_parcela NUMERIC(12, 2) NOT NULL CHECK (valor_parcela > 0),
+    quantidade_parcelas INTEGER NOT NULL CHECK (quantidade_parcelas BETWEEN 2 AND 60),
+    data_primeira_parcela DATE NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'ativo' CHECK (status IN ('ativo', 'quitado', 'cancelado')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS parcelamentos_user_idx
+    ON parcelamentos (user_id);
+
 CREATE TABLE IF NOT EXISTS movimentacoes (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     categoria_id INTEGER REFERENCES categorias(id) ON DELETE SET NULL,
+    parcelamento_id INTEGER REFERENCES parcelamentos(id) ON DELETE SET NULL,
+    parcela_numero INTEGER CHECK (parcela_numero IS NULL OR parcela_numero > 0),
+    total_parcelas INTEGER CHECK (total_parcelas IS NULL OR total_parcelas > 0),
     tipo VARCHAR(10) NOT NULL CHECK (tipo IN ('entrada', 'saida')),
     valor NUMERIC(12, 2) NOT NULL CHECK (valor > 0),
     data_movimentacao DATE NOT NULL,
@@ -44,6 +64,9 @@ CREATE INDEX IF NOT EXISTS movimentacoes_user_tipo_idx
 
 CREATE INDEX IF NOT EXISTS movimentacoes_categoria_idx
     ON movimentacoes (categoria_id);
+
+CREATE INDEX IF NOT EXISTS movimentacoes_parcelamento_idx
+    ON movimentacoes (parcelamento_id);
 
 CREATE TABLE IF NOT EXISTS metas_economia (
     id SERIAL PRIMARY KEY,

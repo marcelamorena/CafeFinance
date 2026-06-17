@@ -1,0 +1,130 @@
+<main class="workspace notranslate" translate="no">
+  <section class="page-shell">
+    <header class="topbar">
+      <a routerLink="/home" class="brand">
+        <img src="/cafe-finance-logo.png" alt="Caf&eacute;Finance" />
+        <strong>Economias<ng-container *ngIf="nomeUsuario"> de {{ nomeUsuario }}</ng-container></strong>
+      </a>
+      <nav>
+        <a routerLink="/home">Home</a>
+        <button type="button" (click)="sair()">Sair</button>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div>
+        <p class="eyebrow">X&iacute;cara de economia</p>
+        <h1>{{ totalEconomizado }}</h1>
+        <p>{{ textoResumoEconomia }}</p>
+      </div>
+
+      <div class="coffee-cup" aria-label="Progresso da meta de economia">
+        <span class="steam steam-one"></span>
+        <span class="steam steam-two"></span>
+        <div class="cup-body">
+          <span class="cup-fill" [style.height.%]="progressoEconomia"></span>
+          <strong>{{ progressoEconomia }}%</strong>
+          <small>{{ textoMetaXicara }}</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel">
+        <h2>Criar meta</h2>
+        <form class="stack-form" (submit)="criarMetaEconomia(); $event.preventDefault()">
+          <label>
+            Nome da meta
+            <input type="text" [value]="nomeMetaEconomia" placeholder="Ex: reserva de emerg&ecirc;ncia" (input)="atualizarNomeMetaEconomia($event)" />
+          </label>
+
+          <label>
+            Valor da meta
+            <div class="money-field">
+              <span>R$</span>
+              <input type="text" inputmode="numeric" [value]="valorMetaEconomia" placeholder="0,00" (input)="formatarValorMetaEconomia($event)" />
+            </div>
+          </label>
+
+          <label>
+            Data limite <span class="optional-label">(opcional)</span>
+            <input type="date" [value]="dataLimiteEconomia" (input)="atualizarDataLimiteEconomia($event)" />
+          </label>
+
+          <button type="submit" [disabled]="criandoMetaEconomia">{{ textoBotaoMetaEconomia }}</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <h2>Guardar economia</h2>
+        <form class="stack-form" (submit)="guardarEconomia(); $event.preventDefault()">
+          <label>
+            Meta
+            <select [value]="metaEconomiaSelecionadaId || ''" (change)="selecionarMetaEconomia($event)">
+              <option value="">Escolha uma meta</option>
+              <option *ngFor="let meta of metasEconomia" [value]="meta.id">{{ meta.nome }}</option>
+            </select>
+          </label>
+
+          <div class="form-grid">
+            <label>
+              Valor guardado
+              <div class="money-field">
+                <span>R$</span>
+                <input type="text" inputmode="numeric" [value]="valorEconomia" placeholder="0,00" (input)="formatarValorEconomia($event)" />
+              </div>
+            </label>
+
+            <label>
+              Data
+              <input type="date" [value]="dataEconomia" [max]="hoje" (input)="atualizarDataEconomia($event)" />
+            </label>
+          </div>
+
+          <label>
+            Descri&ccedil;&atilde;o <span class="optional-label">(opcional)</span>
+            <textarea [value]="descricaoEconomia" rows="3" placeholder="Ex: sobrou do mercado" (input)="atualizarDescricaoEconomia($event)"></textarea>
+            <small class="field-hint">{{ economiaPalavras }}/{{ limitePalavrasDescricao }} palavras</small>
+          </label>
+
+          <p class="feedback" [class.error]="economiaComErro" *ngIf="mensagemEconomia">{{ mensagemEconomia }}</p>
+          <button type="submit" [disabled]="carregandoEconomia || !metasEconomia.length">{{ textoBotaoGuardarEconomia }}</button>
+        </form>
+      </article>
+
+      <article class="panel goals-panel">
+        <h2>Metas cadastradas</h2>
+
+        <div class="goals-list" *ngIf="metasEconomia.length; else semMetasEconomia">
+          <article *ngFor="let meta of metasEconomia">
+            <div>
+              <strong>{{ meta.nome }}</strong>
+              <span>{{ meta.valorAtual }} / {{ meta.valorMeta }}</span>
+            </div>
+            <i><b [style.width.%]="meta.percentual"></b></i>
+            <small>{{ meta.percentual }}% conclu&iacute;do</small>
+          </article>
+        </div>
+
+        <ng-template #semMetasEconomia>
+          <p class="empty-panel">Nenhuma meta criada ainda.</p>
+        </ng-template>
+      </article>
+
+      <article class="panel history-panel">
+        <h2>&Uacute;ltimas economias</h2>
+
+        <div class="history-list" *ngIf="historicoEconomias.length; else semHistoricoEconomia">
+          <p *ngFor="let economia of historicoEconomias">
+            <strong>{{ economia.valor }}</strong>
+            <span>{{ economia.metaNome }} - {{ economia.data }}</span>
+          </p>
+        </div>
+
+        <ng-template #semHistoricoEconomia>
+          <p class="empty-panel">As economias guardadas v&atilde;o aparecer aqui.</p>
+        </ng-template>
+      </article>
+    </section>
+  </section>
+</main>

@@ -22,3 +22,6 @@ Thumbs.db
 # Generated visual drafts not used by the selected layout
 barista-cafe-preview.png
 coffee-beans-bg.png
+favicon-preview-*.png
+prints/
+scripts/capture-screenshots.cjs

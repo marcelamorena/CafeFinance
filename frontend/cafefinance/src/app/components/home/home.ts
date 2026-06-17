@@ -2,24 +2,34 @@ import { NgFor, NgIf } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
-import { AuthService, MovimentacaoItem } from '../../services/auth.service';
+import { AuthService, MetaEconomia, MovimentacaoItem } from '../../services/auth.service';
 
 type TipoMovimentacao = 'saida' | 'entrada';
 
 interface CategoriaOpcao {
   nome: string;
   icone: string;
+  label?: string;
   acao?: 'expandir' | 'recolher';
 }
 
 interface RegistroRecente {
+  id: number;
   icone: string;
   titulo: string;
   categoria: string;
+  categoriaLabel: string;
   valor: string;
+  valorNumero: number;
   data: string;
+  dataMovimentacao: string;
+  descricao?: string | null;
   tipo: TipoMovimentacao;
   tipoLabel: string;
+  parcela?: string;
+  parcelamentoId?: number | null;
+  parcelaNumero?: number | null;
+  totalParcelas?: number | null;
 }
 
 interface GastoCategoria {
@@ -50,9 +60,18 @@ export class Home implements OnInit {
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
 
   hoje = this.formatarData(new Date());
+  readonly limitePalavrasDescricao = 12;
   dataRegistro = this.hoje;
   valorRegistro = '';
   descricaoRegistro = '';
+  descricaoPalavras = 0;
+  compraParcelada = false;
+  quantidadeParcelas = 2;
+  registroEditandoId: number | null = null;
+  registroEditandoParcela = '';
+  registroEditandoParcelamento = false;
+  deletandoRegistroId: number | null = null;
+  registroParaExcluir: RegistroRecente | null = null;
   mensagemRegistro = '';
   mensagemTransacoes = '';
   registroComErro = false;
@@ -69,6 +88,9 @@ export class Home implements OnInit {
   totalEntradas = 'R$ 0,00';
   totalSaidas = 'R$ 0,00';
   saldoNegativo = false;
+  progressoEconomia = 0;
+  textoMetaXicara = 'Sem meta';
+  textoResumoEconomia = 'Crie uma meta de economia para acompanhar seu progresso na xicara.';
 
   registrosRecentes: RegistroRecente[] = [];
   gastosPorCategoria: GastoCategoria[] = [];
@@ -76,17 +98,17 @@ export class Home implements OnInit {
 
   categoriasSaida: CategoriaOpcao[] = [
     { nome: 'Mercado', icone: '&#128722;' },
-    { nome: 'Alimentacao', icone: '&#127860;' },
+    { nome: 'Alimentacao', label: 'Alimentação', icone: '&#127860;' },
     { nome: 'Transporte', icone: '&#128652;' },
     { nome: 'Aluguel', icone: '&#127968;' },
     { nome: 'Contas', icone: '&#128161;' },
-    { nome: 'Saude', icone: '&#128138;' },
+    { nome: 'Saude', label: 'Saúde', icone: '&#128138;' },
     { nome: 'Lazer', icone: '&#127918;' },
     { nome: 'Mais', icone: '+', acao: 'expandir' },
   ];
 
   categoriasExtrasSaida: CategoriaOpcao[] = [
-    { nome: 'Educacao', icone: '&#127891;' },
+    { nome: 'Educacao', label: 'Educação', icone: '&#127891;' },
     { nome: 'Assinaturas', icone: '&#128240;' },
     { nome: 'Investimentos', icone: '&#128201;' },
     { nome: 'Economia', icone: '&#128176;' },
@@ -96,7 +118,7 @@ export class Home implements OnInit {
   ];
 
   categoriasEntrada: CategoriaOpcao[] = [
-    { nome: 'Salario', icone: '&#128188;' },
+    { nome: 'Salario', label: 'Salário', icone: '&#128188;' },
     { nome: 'Freelance', icone: '&#128187;' },
     { nome: 'Pix', icone: '&#128179;' },
     { nome: 'Reembolso', icone: '&#128260;' },
@@ -109,6 +131,7 @@ export class Home implements OnInit {
   ngOnInit(): void {
     this.carregarPerfil();
     this.carregarResumo();
+    this.carregarEconomias();
   }
 
   get categoriasAtuais(): CategoriaOpcao[] {
@@ -130,19 +153,56 @@ export class Home implements OnInit {
       return 'Salvando...';
     }
 
-    return this.tipoMovimentacao === 'saida' ? 'Salvar saida' : 'Salvar entrada';
+    if (this.registroEditandoId) {
+      return 'Salvar edição';
+    }
+
+    return this.tipoMovimentacao === 'saida' ? 'Salvar saída' : 'Salvar entrada';
   }
 
   get dicaRegistro(): string {
+    if (this.registroEditandoParcelamento) {
+      return 'Edite o valor total e a quantidade; as parcelas serão recalculadas automaticamente.';
+    }
+
+    if (this.tipoMovimentacao === 'saida' && this.compraParcelada) {
+      return 'A compra será dividida automaticamente nos próximos meses.';
+    }
+
     return this.tipoMovimentacao === 'saida'
       ? 'Anote este gasto para acompanhar melhor seu saldo.'
       : 'Anote o dinheiro recebido para atualizar suas entradas.';
   }
 
+  get valorParcelaEstimado(): string {
+    if ((!this.compraParcelada && !this.registroEditandoParcelamento) || !this.valorRegistro) {
+      return '';
+    }
+
+    const valorTotal = this.valorRegistroParaNumero(this.valorRegistro);
+
+    if (valorTotal <= 0) {
+      return '';
+    }
+
+    return this.formatarReal(valorTotal / this.quantidadeParcelas);
+  }
+
   selecionarTipo(tipo: TipoMovimentacao): void {
+    if (this.registroEditandoParcelamento && tipo === 'entrada') {
+      this.exibirMensagemRegistro('Parcelas continuam como saída. Edite valor, data, categoria ou descrição.', true);
+      return;
+    }
+
     this.tipoMovimentacao = tipo;
     this.mostrarCategoriasExtrasSaida = false;
     this.categoriaSelecionada = this.categoriasAtuais[0].nome;
+
+    if (tipo === 'entrada') {
+      this.compraParcelada = false;
+      this.quantidadeParcelas = 2;
+    }
+
     this.limparMensagemRegistro();
   }
 
@@ -189,7 +249,65 @@ export class Home implements OnInit {
   }
 
   atualizarDescricaoRegistro(event: Event): void {
-    this.descricaoRegistro = (event.target as HTMLTextAreaElement).value;
+    const textarea = event.target as HTMLTextAreaElement;
+    const descricaoLimitada = this.limitarPalavras(textarea.value, this.limitePalavrasDescricao);
+
+    this.descricaoRegistro = descricaoLimitada;
+    this.descricaoPalavras = this.contarPalavras(descricaoLimitada);
+    textarea.value = descricaoLimitada;
+  }
+
+  atualizarCompraParcelada(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.compraParcelada = this.tipoMovimentacao === 'saida' && input.checked;
+    this.limparMensagemRegistro();
+  }
+
+  atualizarQuantidadeParcelas(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const quantidade = Math.min(60, Math.max(2, Number(input.value) || 2));
+
+    this.quantidadeParcelas = quantidade;
+    input.value = String(quantidade);
+    this.limparMensagemRegistro();
+  }
+
+  editarRegistro(registro: RegistroRecente): void {
+    this.registroEditandoId = registro.id;
+    this.registroEditandoParcela = registro.parcela ?? '';
+    this.registroEditandoParcelamento = Boolean(registro.parcelamentoId);
+    this.tipoMovimentacao = registro.tipo;
+    this.mostrarCategoriasExtrasSaida = false;
+    this.categoriaSelecionada = registro.categoria;
+    this.quantidadeParcelas = registro.totalParcelas ?? 2;
+    this.valorRegistro = this.formatarMoeda(
+      String(Math.round(registro.valorNumero * (this.registroEditandoParcelamento ? this.quantidadeParcelas : 1) * 100)),
+    );
+    this.dataRegistro = this.registroEditandoParcelamento
+      ? this.calcularDataPrimeiraParcela(registro.dataMovimentacao, registro.parcelaNumero ?? 1)
+      : registro.dataMovimentacao;
+    this.descricaoRegistro = registro.descricao ?? '';
+    this.descricaoPalavras = this.contarPalavras(this.descricaoRegistro);
+    this.compraParcelada = this.registroEditandoParcelamento;
+    this.limparMensagemRegistro();
+    document.getElementById('novo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  cancelarEdicao(limparMensagem = true): void {
+    this.registroEditandoId = null;
+    this.registroEditandoParcela = '';
+    this.registroEditandoParcelamento = false;
+    this.valorRegistro = '';
+    this.descricaoRegistro = '';
+    this.descricaoPalavras = 0;
+    this.dataRegistro = this.hoje;
+    this.compraParcelada = false;
+    this.quantidadeParcelas = 2;
+    this.tipoMovimentacao = 'entrada';
+    this.categoriaSelecionada = this.categoriasEntrada[0].nome;
+    if (limparMensagem) {
+      this.limparMensagemRegistro();
+    }
   }
 
   alternarTransacoes(): void {
@@ -222,6 +340,37 @@ export class Home implements OnInit {
     this.carregandoRegistro = true;
     this.limparMensagemRegistro();
 
+    if (this.registroEditandoId) {
+      this.authService
+        .atualizarMovimentacao(this.registroEditandoId, {
+          tipo: this.tipoMovimentacao,
+          valor: this.valorRegistro,
+          data_movimentacao: this.dataRegistro,
+          categoria: this.categoriaSelecionada,
+          descricao: this.descricaoRegistro.trim(),
+          parcelado: this.registroEditandoParcelamento,
+          quantidade_parcelas: this.registroEditandoParcelamento ? this.quantidadeParcelas : undefined,
+        })
+        .subscribe({
+          next: (resposta) => {
+            this.carregandoRegistro = false;
+            this.exibirMensagemRegistro(resposta.message || 'Registro atualizado com sucesso.', false);
+            this.cancelarEdicao(false);
+            this.carregarResumo();
+            if (this.mostrandoTransacoes) {
+              this.carregarTransacoes();
+            }
+            this.atualizarTela();
+          },
+          error: (erro) => {
+            this.carregandoRegistro = false;
+            this.exibirMensagemRegistro(erro.error?.message ?? 'Não foi possível atualizar o registro.', true);
+            this.atualizarTela();
+          },
+        });
+      return;
+    }
+
     this.authService
       .salvarMovimentacao({
         tipo: this.tipoMovimentacao,
@@ -229,6 +378,8 @@ export class Home implements OnInit {
         data_movimentacao: this.dataRegistro,
         categoria: this.categoriaSelecionada,
         descricao: this.descricaoRegistro.trim(),
+        parcelado: this.tipoMovimentacao === 'saida' && this.compraParcelada,
+        quantidade_parcelas: this.compraParcelada ? this.quantidadeParcelas : undefined,
       })
       .subscribe({
         next: (resposta) => {
@@ -236,6 +387,9 @@ export class Home implements OnInit {
           this.exibirMensagemRegistro(resposta.message || 'Registro salvo com sucesso.', false);
           this.valorRegistro = '';
           this.descricaoRegistro = '';
+          this.descricaoPalavras = 0;
+          this.compraParcelada = false;
+          this.quantidadeParcelas = 2;
           this.dataRegistro = this.hoje;
           this.atualizarTela();
           this.carregarResumo();
@@ -245,10 +399,59 @@ export class Home implements OnInit {
         },
         error: (erro) => {
           this.carregandoRegistro = false;
-          this.exibirMensagemRegistro(erro.error?.message ?? 'Nao foi possivel salvar o registro.', true);
+          this.exibirMensagemRegistro(erro.error?.message ?? 'Não foi possível salvar o registro.', true);
           this.atualizarTela();
         },
       });
+  }
+
+  solicitarExclusao(registro: RegistroRecente): void {
+    this.registroParaExcluir = registro;
+    this.limparMensagemRegistro();
+  }
+
+  cancelarExclusao(): void {
+    if (this.deletandoRegistroId) {
+      return;
+    }
+
+    this.registroParaExcluir = null;
+  }
+
+  confirmarExclusao(): void {
+    const registro = this.registroParaExcluir;
+
+    if (!registro) {
+      return;
+    }
+
+    this.deletandoRegistroId = registro.id;
+    this.limparMensagemRegistro();
+
+    this.authService.excluirMovimentacao(registro.id).subscribe({
+      next: (resposta) => {
+        this.deletandoRegistroId = null;
+        this.registroParaExcluir = null;
+
+        if (this.registroEditandoId === registro.id || registro.parcelamentoId) {
+          this.cancelarEdicao(false);
+        }
+
+        this.exibirMensagemRegistro(resposta.message || 'Registro excluído com sucesso.', false);
+        this.carregarResumo();
+
+        if (this.mostrandoTransacoes) {
+          this.carregarTransacoes();
+        }
+
+        this.atualizarTela();
+      },
+      error: (erro) => {
+        this.deletandoRegistroId = null;
+        this.exibirMensagemRegistro(erro.error?.message ?? 'Não foi possível excluir o registro.', true);
+        this.atualizarTela();
+      },
+    });
   }
 
   sair(): void {
@@ -301,6 +504,19 @@ export class Home implements OnInit {
     });
   }
 
+  private carregarEconomias(): void {
+    this.authService.resumoEconomias().subscribe({
+      next: (resposta) => {
+        this.aplicarMetaPrincipal(resposta.dashboard.meta_principal ?? null);
+        this.atualizarTela();
+      },
+      error: () => {
+        this.aplicarMetaPrincipal(null);
+        this.atualizarTela();
+      },
+    });
+  }
+
   private carregarTransacoes(): void {
     this.carregandoTransacoes = true;
     this.mensagemTransacoes = '';
@@ -314,7 +530,7 @@ export class Home implements OnInit {
       },
       error: () => {
         this.carregandoTransacoes = false;
-        this.mensagemTransacoes = 'Nao foi possivel carregar todas as transacoes.';
+        this.mensagemTransacoes = 'Não foi possível carregar todas as transações.';
         this.atualizarTela();
       },
     });
@@ -334,6 +550,20 @@ export class Home implements OnInit {
     this.registroComErro = false;
   }
 
+  private limitarPalavras(texto: string, limite: number): string {
+    const palavras = texto.trim().split(/\s+/).filter(Boolean);
+
+    if (palavras.length <= limite) {
+      return texto;
+    }
+
+    return palavras.slice(0, limite).join(' ');
+  }
+
+  private contarPalavras(texto: string): number {
+    return texto.trim().split(/\s+/).filter(Boolean).length;
+  }
+
   private finalizarSessao(): void {
     localStorage.removeItem('cafefinance_usuario');
     this.router.navigate(['/']);
@@ -345,6 +575,17 @@ export class Home implements OnInit {
     const dia = String(data.getDate()).padStart(2, '0');
 
     return `${ano}-${mes}-${dia}`;
+  }
+
+  private calcularDataPrimeiraParcela(dataParcela: string, parcelaNumero: number): string {
+    const [ano, mes, dia] = dataParcela.split('-').map(Number);
+    const data = new Date(ano, mes - parcelaNumero, dia);
+
+    if (data.getDate() !== dia) {
+      data.setDate(0);
+    }
+
+    return this.formatarData(data);
   }
 
   private formatarMoeda(digitos: string): string {
@@ -363,18 +604,49 @@ export class Home implements OnInit {
     });
   }
 
+  private valorRegistroParaNumero(valor: string): number {
+    const normalizado = valor.replace(/\./g, '').replace(',', '.');
+
+    return Number(normalizado) || 0;
+  }
+
   private formatarRegistroTela(registro: MovimentacaoItem): RegistroRecente {
     const entrada = registro.tipo === 'entrada';
 
     return {
+      id: registro.id,
       icone: this.obterIconeCategoria(registro.tipo, registro.categoria, registro.icone),
       titulo: registro.titulo,
       categoria: registro.categoria,
+      categoriaLabel: this.formatarNomeCategoria(registro.categoria),
       valor: `${entrada ? '+' : '-'} ${this.formatarReal(registro.valor)}`,
+      valorNumero: registro.valor,
       data: this.formatarDataCurta(registro.data_movimentacao),
+      dataMovimentacao: registro.data_movimentacao,
+      descricao: registro.descricao ?? '',
       tipo: registro.tipo,
-      tipoLabel: entrada ? 'Entrada' : 'Saida',
+      tipoLabel: entrada ? 'Entrada' : 'Saída',
+      parcela:
+        registro.parcela_numero && registro.total_parcelas
+          ? `Parcela ${registro.parcela_numero}/${registro.total_parcelas}`
+          : undefined,
+      parcelamentoId: registro.parcelamento_id,
+      parcelaNumero: registro.parcela_numero,
+      totalParcelas: registro.total_parcelas,
     };
+  }
+
+  private aplicarMetaPrincipal(meta: MetaEconomia | null): void {
+    if (!meta) {
+      this.progressoEconomia = 0;
+      this.textoMetaXicara = 'Sem meta';
+      this.textoResumoEconomia = 'Crie uma meta de economia para acompanhar seu progresso na xicara.';
+      return;
+    }
+
+    this.progressoEconomia = Math.max(0, Math.min(100, Math.round(meta.percentual)));
+    this.textoMetaXicara = meta.nome;
+    this.textoResumoEconomia = `${this.formatarReal(meta.valor_atual)} guardados de ${this.formatarReal(meta.valor_meta)} em ${meta.nome}.`;
   }
 
   private agruparTransacoesPorMes(movimentacoes: MovimentacaoItem[]): GrupoTransacoesMes[] {
@@ -448,6 +720,17 @@ export class Home implements OnInit {
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .trim();
+  }
+
+  private formatarNomeCategoria(categoria: string): string {
+    const nomes: Record<string, string> = {
+      Alimentacao: 'Alimentação',
+      Educacao: 'Educação',
+      Salario: 'Salário',
+      Saude: 'Saúde',
+    };
+
+    return nomes[categoria] ?? categoria;
   }
 
   private formatarDataCurta(data: string): string {
