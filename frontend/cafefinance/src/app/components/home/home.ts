@@ -1,6 +1,9 @@
 import { NgFor, NgIf } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import Chart from 'chart.js/auto';
+import type { ChartConfiguration } from 'chart.js';
+import { Subscription } from 'rxjs';
 
 import { AuthService, MetaEconomia, MovimentacaoItem } from '../../services/auth.service';
 
@@ -36,6 +39,14 @@ interface GastoCategoria {
   nome: string;
   percentual: number;
   valor: string;
+  valorNumero: number;
+}
+
+interface DiaDashboard {
+  dia: string;
+  entradas: number;
+  saidas: number;
+  saldo: number;
 }
 
 interface GrupoTransacoesMes {
@@ -44,7 +55,14 @@ interface GrupoTransacoesMes {
   totalEntradas: string;
   totalSaidas: string;
   saldo: string;
+  faturaParcelada: string;
+  totalEntradasNumero: number;
+  totalSaidasNumero: number;
+  saldoNumero: number;
+  faturaParceladaNumero: number;
   saldoNegativo: boolean;
+  gastosPorCategoria: GastoCategoria[];
+  dias: DiaDashboard[];
   transacoes: RegistroRecente[];
 }
 
@@ -54,10 +72,21 @@ interface GrupoTransacoesMes {
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home implements OnInit {
+export class Home implements OnInit, AfterViewInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly changeDetectorRef = inject(ChangeDetectorRef);
+  private graficoFluxoMensal?: Chart<'bar'>;
+  private graficoCategoriaMensal?: Chart<'doughnut'>;
+  private graficoEvolucaoMensal?: Chart<'line'>;
+  private graficoFaturaParcelada?: Chart<'bar'>;
+  private navegacaoSubscription?: Subscription;
+  private viewCarregada = false;
+
+  @ViewChild('fluxoMensalCanvas') private fluxoMensalCanvas?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('categoriaMensalCanvas') private categoriaMensalCanvas?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('evolucaoMensalCanvas') private evolucaoMensalCanvas?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('faturaParceladaCanvas') private faturaParceladaCanvas?: ElementRef<HTMLCanvasElement>;
 
   hoje = this.formatarData(new Date());
   readonly limitePalavrasDescricao = 12;
@@ -80,6 +109,7 @@ export class Home implements OnInit {
   resumoCarregado = false;
   mostrandoTransacoes = false;
   mesAberto: string | null = null;
+  mesDashboardSelecionado: string | null = null;
   nomeUsuario = this.obterNomeUsuario();
   tipoMovimentacao: TipoMovimentacao = 'entrada';
   categoriaSelecionada = 'Salario';
@@ -87,6 +117,9 @@ export class Home implements OnInit {
   saldoTotal = 'R$ 0,00';
   totalEntradas = 'R$ 0,00';
   totalSaidas = 'R$ 0,00';
+  saldoTotalNumero = 0;
+  totalEntradasNumero = 0;
+  totalSaidasNumero = 0;
   saldoNegativo = false;
   progressoEconomia = 0;
   textoMetaXicara = 'Sem meta';
@@ -130,8 +163,72 @@ export class Home implements OnInit {
 
   ngOnInit(): void {
     this.carregarPerfil();
-    this.carregarResumo();
     this.carregarEconomias();
+    this.carregarDadosDaRota();
+
+    this.navegacaoSubscription = this.router.events.subscribe((evento) => {
+      if (evento instanceof NavigationEnd) {
+        this.carregarDadosDaRota();
+      }
+    });
+  }
+
+  ngAfterViewInit(): void {
+    this.viewCarregada = true;
+    this.agendarRenderizacaoGraficos();
+  }
+
+  ngOnDestroy(): void {
+    this.navegacaoSubscription?.unsubscribe();
+    this.destruirGraficosDashboard();
+  }
+
+  get paginaMovimentacoes(): boolean {
+    return this.router.url.includes('/movimentacoes');
+  }
+
+  get paginaPerfil(): boolean {
+    return this.router.url.includes('/perfil');
+  }
+
+  get paginaDashboard(): boolean {
+    return !this.paginaMovimentacoes && !this.paginaPerfil;
+  }
+
+  get mesDashboardAtual(): GrupoTransacoesMes | null {
+    const meses = this.mesesDashboard;
+
+    return meses.find((grupo) => grupo.chave === this.mesDashboardSelecionado) ?? meses[0] ?? null;
+  }
+
+  get mesesDashboard(): GrupoTransacoesMes[] {
+    const chaveAtual = this.chaveMesAtual();
+    const meses = this.transacoesPorMes.slice();
+
+    if (!meses.some((grupo) => grupo.chave === chaveAtual)) {
+      meses.push(this.criarGrupoMesVazio(chaveAtual));
+    }
+
+    return meses.sort((grupoA, grupoB) => grupoB.chave.localeCompare(grupoA.chave));
+  }
+
+  get mesesComFaturaParcelada(): GrupoTransacoesMes[] {
+    return this.transacoesPorMes
+      .filter((grupo) => grupo.faturaParceladaNumero > 0)
+      .slice()
+      .sort((grupoA, grupoB) => grupoA.chave.localeCompare(grupoB.chave));
+  }
+
+  get percentualEntradas(): number {
+    return this.calcularPercentualComparativo(this.totalEntradasNumero);
+  }
+
+  get percentualSaidas(): number {
+    return this.calcularPercentualComparativo(this.totalSaidasNumero);
+  }
+
+  get maiorFluxoFinanceiro(): number {
+    return Math.max(this.totalEntradasNumero, this.totalSaidasNumero, 1);
   }
 
   get categoriasAtuais(): CategoriaOpcao[] {
@@ -326,6 +423,12 @@ export class Home implements OnInit {
     this.mesAberto = this.mesAberto === chave ? null : chave;
   }
 
+  selecionarMesDashboard(chave: string): void {
+    this.mesDashboardSelecionado = chave;
+    this.atualizarTela();
+    this.agendarRenderizacaoGraficos();
+  }
+
   salvarRegistro(): void {
     if (!this.valorRegistro) {
       this.exibirMensagemRegistro('Informe um valor maior que zero.', true);
@@ -357,7 +460,7 @@ export class Home implements OnInit {
             this.exibirMensagemRegistro(resposta.message || 'Registro atualizado com sucesso.', false);
             this.cancelarEdicao(false);
             this.carregarResumo();
-            if (this.mostrandoTransacoes) {
+            if (this.mostrandoTransacoes || this.paginaDashboard) {
               this.carregarTransacoes();
             }
             this.atualizarTela();
@@ -393,7 +496,7 @@ export class Home implements OnInit {
           this.dataRegistro = this.hoje;
           this.atualizarTela();
           this.carregarResumo();
-          if (this.mostrandoTransacoes) {
+          if (this.mostrandoTransacoes || this.paginaDashboard) {
             this.carregarTransacoes();
           }
         },
@@ -440,7 +543,7 @@ export class Home implements OnInit {
         this.exibirMensagemRegistro(resposta.message || 'Registro excluído com sucesso.', false);
         this.carregarResumo();
 
-        if (this.mostrandoTransacoes) {
+        if (this.mostrandoTransacoes || this.paginaDashboard) {
           this.carregarTransacoes();
         }
 
@@ -459,6 +562,24 @@ export class Home implements OnInit {
       next: () => this.finalizarSessao(),
       error: () => this.finalizarSessao(),
     });
+  }
+
+  private carregarDadosDaRota(): void {
+    this.carregarResumo();
+
+    if (this.paginaMovimentacoes || this.paginaDashboard) {
+      this.mostrandoTransacoes = true;
+
+      if (this.paginaDashboard) {
+        this.mesDashboardSelecionado = this.chaveMesAtual();
+      }
+
+      this.carregarTransacoes();
+      return;
+    }
+
+    this.mostrandoTransacoes = false;
+    this.destruirGraficosDashboard();
   }
 
   private carregarPerfil(): void {
@@ -484,6 +605,9 @@ export class Home implements OnInit {
     this.authService.resumoMovimentacoes().subscribe({
       next: (resposta) => {
         const dashboard = resposta.dashboard;
+        this.saldoTotalNumero = dashboard.saldo;
+        this.totalEntradasNumero = dashboard.total_entradas;
+        this.totalSaidasNumero = dashboard.total_saidas;
         this.saldoTotal = this.formatarReal(dashboard.saldo);
         this.totalEntradas = this.formatarReal(dashboard.total_entradas);
         this.totalSaidas = this.formatarReal(dashboard.total_saidas);
@@ -493,6 +617,7 @@ export class Home implements OnInit {
           nome: gasto.nome,
           percentual: gasto.percentual,
           valor: this.formatarReal(gasto.total),
+          valorNumero: gasto.total,
         }));
         this.resumoCarregado = true;
         this.atualizarTela();
@@ -524,16 +649,263 @@ export class Home implements OnInit {
     this.authService.listarMovimentacoes().subscribe({
       next: (resposta) => {
         this.transacoesPorMes = this.agruparTransacoesPorMes(resposta.movimentacoes);
+        this.ajustarMesDashboardSelecionado();
         this.mesAberto = null;
         this.carregandoTransacoes = false;
         this.atualizarTela();
+        this.agendarRenderizacaoGraficos();
       },
       error: () => {
         this.carregandoTransacoes = false;
         this.mensagemTransacoes = 'Não foi possível carregar todas as transações.';
         this.atualizarTela();
+        this.destruirGraficosDashboard();
       },
     });
+  }
+
+  private ajustarMesDashboardSelecionado(): void {
+    if (this.paginaDashboard) {
+      const mesExisteNoDashboard = this.mesesDashboard.some((grupo) => grupo.chave === this.mesDashboardSelecionado);
+
+      if (!this.mesDashboardSelecionado || !mesExisteNoDashboard) {
+        this.mesDashboardSelecionado = this.chaveMesAtual();
+      }
+
+      return;
+    }
+
+    if (!this.transacoesPorMes.length) {
+      this.mesDashboardSelecionado = null;
+      return;
+    }
+
+    const mesAindaExiste = this.transacoesPorMes.some((grupo) => grupo.chave === this.mesDashboardSelecionado);
+    if (!mesAindaExiste) {
+      this.mesDashboardSelecionado = this.transacoesPorMes[0].chave;
+    }
+  }
+
+  private agendarRenderizacaoGraficos(): void {
+    if (!this.paginaDashboard) {
+      this.destruirGraficosDashboard();
+      return;
+    }
+
+    window.setTimeout(() => this.renderizarGraficosDashboard(), 0);
+  }
+
+  private renderizarGraficosDashboard(): void {
+    if (!this.viewCarregada || !this.paginaDashboard) {
+      return;
+    }
+
+    const grupo = this.mesDashboardAtual;
+    if (!grupo) {
+      this.destruirGraficosDashboard();
+      return;
+    }
+
+    this.renderizarGraficoFluxoMensal(grupo);
+    this.renderizarGraficoCategoriaMensal(grupo);
+    this.renderizarGraficoEvolucaoMensal(grupo);
+    this.renderizarGraficoFaturaParcelada();
+  }
+
+  private renderizarGraficoFluxoMensal(grupo: GrupoTransacoesMes): void {
+    const canvas = this.fluxoMensalCanvas?.nativeElement;
+    if (!canvas) {
+      return;
+    }
+
+    this.graficoFluxoMensal?.destroy();
+    const config: ChartConfiguration<'bar'> = {
+      type: 'bar',
+      data: {
+        labels: ['Entradas', 'Saídas'],
+        datasets: [
+          {
+            label: grupo.mes,
+            data: [grupo.totalEntradasNumero, grupo.totalSaidasNumero],
+            backgroundColor: ['#6e3517', '#a13d2b'],
+            borderColor: ['#3a190a', '#7e3418'],
+            borderRadius: 12,
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: this.opcoesGraficoMonetario<'bar'>(false),
+    };
+
+    this.graficoFluxoMensal = new Chart(canvas, config);
+  }
+
+  private renderizarGraficoCategoriaMensal(grupo: GrupoTransacoesMes): void {
+    const canvas = this.categoriaMensalCanvas?.nativeElement;
+    if (!canvas || !grupo.gastosPorCategoria.length) {
+      this.graficoCategoriaMensal?.destroy();
+      this.graficoCategoriaMensal = undefined;
+      return;
+    }
+
+    this.graficoCategoriaMensal?.destroy();
+    const config: ChartConfiguration<'doughnut'> = {
+      type: 'doughnut',
+      data: {
+        labels: grupo.gastosPorCategoria.map((categoria) => categoria.nome),
+        datasets: [
+          {
+            data: grupo.gastosPorCategoria.map((categoria) => categoria.valorNumero),
+            backgroundColor: ['#6e3517', '#a96c3f', '#d5b98c', '#a13d2b', '#3a190a', '#c97b52', '#ead4b2'],
+            borderColor: '#fff8ea',
+            borderWidth: 3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#2a1208',
+              font: { weight: 'bold' },
+            },
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.label}: ${this.formatarReal(Number(context.raw ?? 0))}`,
+            },
+          },
+        },
+      },
+    };
+
+    this.graficoCategoriaMensal = new Chart(canvas, config);
+  }
+
+  private renderizarGraficoEvolucaoMensal(grupo: GrupoTransacoesMes): void {
+    const canvas = this.evolucaoMensalCanvas?.nativeElement;
+    if (!canvas) {
+      return;
+    }
+
+    this.graficoEvolucaoMensal?.destroy();
+    const config: ChartConfiguration<'line'> = {
+      type: 'line',
+      data: {
+        labels: grupo.dias.map((dia) => dia.dia),
+        datasets: [
+          {
+            label: 'Entradas',
+            data: grupo.dias.map((dia) => dia.entradas),
+            borderColor: '#6e3517',
+            backgroundColor: '#6e351733',
+            tension: 0.35,
+          },
+          {
+            label: 'Saídas',
+            data: grupo.dias.map((dia) => dia.saidas),
+            borderColor: '#a13d2b',
+            backgroundColor: '#a13d2b33',
+            tension: 0.35,
+          },
+          {
+            label: 'Saldo acumulado',
+            data: grupo.dias.map((dia) => dia.saldo),
+            borderColor: '#2a1208',
+            backgroundColor: '#2a120833',
+            tension: 0.35,
+          },
+        ],
+      },
+      options: this.opcoesGraficoMonetario<'line'>(true),
+    };
+
+    this.graficoEvolucaoMensal = new Chart(canvas, config);
+  }
+
+  private renderizarGraficoFaturaParcelada(): void {
+    const canvas = this.faturaParceladaCanvas?.nativeElement;
+    const meses = this.mesesComFaturaParcelada;
+
+    if (!canvas || !meses.length) {
+      this.graficoFaturaParcelada?.destroy();
+      this.graficoFaturaParcelada = undefined;
+      return;
+    }
+
+    this.graficoFaturaParcelada?.destroy();
+    const config: ChartConfiguration<'bar'> = {
+      type: 'bar',
+      data: {
+        labels: meses.map((grupo) => grupo.mes),
+        datasets: [
+          {
+            label: 'Fatura parcelada',
+            data: meses.map((grupo) => grupo.faturaParceladaNumero),
+            backgroundColor: '#7c3717',
+            borderColor: '#3a190a',
+            borderRadius: 12,
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: this.opcoesGraficoMonetario<'bar'>(false),
+    };
+
+    this.graficoFaturaParcelada = new Chart(canvas, config);
+  }
+
+  private opcoesGraficoMonetario<T extends 'bar' | 'line'>(mostrarLegenda: boolean): ChartConfiguration<T>['options'] {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: mostrarLegenda,
+          position: 'bottom',
+          labels: {
+            color: '#2a1208',
+            font: { weight: 'bold' },
+          },
+        },
+        tooltip: {
+          callbacks: {
+            label: (context: { dataset: { label?: string }; raw: unknown }) => {
+              const label = 'label' in context.dataset ? String(context.dataset.label ?? '') : '';
+              return `${label}: ${this.formatarReal(Number(context.raw ?? 0))}`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: { color: '#ead4b280' },
+          ticks: { color: '#2a1208', font: { weight: 'bold' } },
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: '#ead4b280' },
+          ticks: {
+            color: '#2a1208',
+            callback: (valor: string | number) => this.formatarReal(Number(valor)),
+          },
+        },
+      },
+    } as unknown as ChartConfiguration<T>['options'];
+  }
+
+  private destruirGraficosDashboard(): void {
+    this.graficoFluxoMensal?.destroy();
+    this.graficoCategoriaMensal?.destroy();
+    this.graficoEvolucaoMensal?.destroy();
+    this.graficoFaturaParcelada?.destroy();
+    this.graficoFluxoMensal = undefined;
+    this.graficoCategoriaMensal = undefined;
+    this.graficoEvolucaoMensal = undefined;
+    this.graficoFaturaParcelada = undefined;
   }
 
   private atualizarTela(): void {
@@ -604,6 +976,10 @@ export class Home implements OnInit {
     });
   }
 
+  private calcularPercentualComparativo(valor: number): number {
+    return Math.max(0, Math.min(100, Math.round((valor / this.maiorFluxoFinanceiro) * 100)));
+  }
+
   private valorRegistroParaNumero(valor: string): number {
     const normalizado = valor.replace(/\./g, '').replace(',', '.');
 
@@ -650,7 +1026,19 @@ export class Home implements OnInit {
   }
 
   private agruparTransacoesPorMes(movimentacoes: MovimentacaoItem[]): GrupoTransacoesMes[] {
-    const grupos = new Map<string, { chave: string; mes: string; entradas: number; saidas: number; transacoes: RegistroRecente[] }>();
+    const grupos = new Map<
+      string,
+      {
+        chave: string;
+        mes: string;
+        entradas: number;
+        saidas: number;
+        faturaParcelada: number;
+        categorias: Map<string, number>;
+        dias: Map<string, { dia: string; entradas: number; saidas: number }>;
+        transacoes: RegistroRecente[];
+      }
+    >();
 
     movimentacoes.forEach((movimentacao) => {
       const chave = movimentacao.data_movimentacao.slice(0, 7);
@@ -661,28 +1049,104 @@ export class Home implements OnInit {
           mes: this.formatarMesAno(movimentacao.data_movimentacao),
           entradas: 0,
           saidas: 0,
+          faturaParcelada: 0,
+          categorias: new Map<string, number>(),
+          dias: new Map<string, { dia: string; entradas: number; saidas: number }>(),
           transacoes: [],
+        };
+      const diaChave = movimentacao.data_movimentacao;
+      const diaExistente =
+        grupoExistente.dias.get(diaChave) ??
+        {
+          dia: this.formatarDataCurta(movimentacao.data_movimentacao),
+          entradas: 0,
+          saidas: 0,
         };
 
       if (movimentacao.tipo === 'entrada') {
         grupoExistente.entradas += movimentacao.valor;
+        diaExistente.entradas += movimentacao.valor;
       } else {
         grupoExistente.saidas += movimentacao.valor;
+        diaExistente.saidas += movimentacao.valor;
+        if (movimentacao.parcelamento_id) {
+          grupoExistente.faturaParcelada += movimentacao.valor;
+        }
+        const categoria = this.formatarNomeCategoria(movimentacao.categoria);
+        grupoExistente.categorias.set(categoria, (grupoExistente.categorias.get(categoria) ?? 0) + movimentacao.valor);
       }
 
+      grupoExistente.dias.set(diaChave, diaExistente);
       grupoExistente.transacoes.push(this.formatarRegistroTela(movimentacao));
       grupos.set(chave, grupoExistente);
     });
 
-    return Array.from(grupos.values()).map((grupo) => ({
-      chave: grupo.chave,
-      mes: grupo.mes,
-      totalEntradas: this.formatarReal(grupo.entradas),
-      totalSaidas: this.formatarReal(grupo.saidas),
-      saldo: this.formatarReal(grupo.entradas - grupo.saidas),
-      saldoNegativo: grupo.entradas - grupo.saidas < 0,
-      transacoes: grupo.transacoes,
-    }));
+    return Array.from(grupos.values()).sort((grupoA, grupoB) => grupoB.chave.localeCompare(grupoA.chave)).map((grupo) => {
+      let saldoAcumulado = 0;
+      const dias = Array.from(grupo.dias.entries())
+        .sort(([dataA], [dataB]) => dataA.localeCompare(dataB))
+        .map(([, dia]) => {
+          saldoAcumulado += dia.entradas - dia.saidas;
+
+          return {
+            dia: dia.dia,
+            entradas: dia.entradas,
+            saidas: dia.saidas,
+            saldo: saldoAcumulado,
+          };
+        });
+      const gastosPorCategoria = Array.from(grupo.categorias.entries())
+        .sort(([, valorA], [, valorB]) => valorB - valorA)
+        .map(([nome, valor]) => ({
+          nome,
+          percentual: grupo.saidas > 0 ? Math.round((valor / grupo.saidas) * 100) : 0,
+          valor: this.formatarReal(valor),
+          valorNumero: valor,
+        }));
+      const saldo = grupo.entradas - grupo.saidas;
+
+      return {
+        chave: grupo.chave,
+        mes: grupo.mes,
+        totalEntradas: this.formatarReal(grupo.entradas),
+        totalSaidas: this.formatarReal(grupo.saidas),
+        saldo: this.formatarReal(saldo),
+        faturaParcelada: this.formatarReal(grupo.faturaParcelada),
+        totalEntradasNumero: grupo.entradas,
+        totalSaidasNumero: grupo.saidas,
+        saldoNumero: saldo,
+        faturaParceladaNumero: grupo.faturaParcelada,
+        saldoNegativo: saldo < 0,
+        gastosPorCategoria,
+        dias,
+        transacoes: grupo.transacoes,
+      };
+    });
+  }
+
+  private criarGrupoMesVazio(chave: string): GrupoTransacoesMes {
+    const dataBase = `${chave}-01`;
+
+    return {
+      chave,
+      mes: this.formatarMesAno(dataBase),
+      totalEntradas: this.formatarReal(0),
+      totalSaidas: this.formatarReal(0),
+      saldo: this.formatarReal(0),
+      faturaParcelada: this.formatarReal(0),
+      totalEntradasNumero: 0,
+      totalSaidasNumero: 0,
+      saldoNumero: 0,
+      faturaParceladaNumero: 0,
+      saldoNegativo: false,
+      gastosPorCategoria: [],
+      dias: [],
+      transacoes: [],
+    };
+  }
+
+  private chaveMesAtual(): string {
+    return this.hoje.slice(0, 7);
   }
 
   private obterIconeCategoria(tipo: TipoMovimentacao, categoria: string, iconeRecebido?: string): string {

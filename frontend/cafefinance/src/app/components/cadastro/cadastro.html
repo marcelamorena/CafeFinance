@@ -1,38 +1,49 @@
 <main class="auth-shell">
-  <section class="signup-panel">
-    <header class="topbar">
-      <a class="nav-link" routerLink="/">Entrar</a>
-    </header>
-
-    <section class="signup-brand">
-      <span class="brand-logo-frame">
-        <img class="brand-logo" src="/barista-cafe.png" alt="Caf&eacute;" />
-      </span>
+  <section class="auth-stage">
+    <a class="auth-logo" routerLink="/" aria-label="Caf&eacute;Finance">
+      <img src="/cafefinance-login-cup-transparent.png" alt="" />
       <div>
-        <p class="eyebrow">Caf&eacute;Finance</p>
-        <h1>Criar conta</h1>
+        <strong>Caf&eacute;Finance</strong>
+        <span><i></i>Seu dinheiro no ponto certo.<i></i></span>
       </div>
-    </section>
+    </a>
 
     <form class="signup-card" [formGroup]="cadastroForm" (ngSubmit)="cadastro()">
+      <img class="card-mark" src="/cafefinance-bean.svg" alt="" />
+      <h1>Criar conta</h1>
+      <p class="form-subtitle">Monte seu acesso para organizar entradas, sa&iacute;das e metas.</p>
+      <div class="title-divider" aria-hidden="true"><span></span></div>
+
       <div class="form-group">
         <label for="name">Nome</label>
-        <input id="name" type="text" formControlName="name" placeholder="Digite seu nome" />
+        <div class="input-shell">
+          <b aria-hidden="true">&#128100;</b>
+          <input id="name" type="text" formControlName="name" placeholder="Digite seu nome" />
+        </div>
       </div>
 
       <div class="form-group">
         <label for="email">E-mail</label>
-        <input id="email" type="email" formControlName="email" placeholder="seuemail@exemplo.com" />
+        <div class="input-shell">
+          <b aria-hidden="true">&#9993;</b>
+          <input id="email" type="email" formControlName="email" placeholder="seu@email.com" />
+        </div>
       </div>
 
       <div class="form-group">
         <label for="password">Senha</label>
-        <input id="password" type="password" formControlName="password" placeholder="Digite sua senha" />
+        <div class="input-shell">
+          <b aria-hidden="true">&#128274;</b>
+          <input id="password" type="password" formControlName="password" placeholder="Digite sua senha" />
+        </div>
       </div>
 
       <div class="form-group">
         <label for="confirmarSenha">Confirmar senha</label>
-        <input id="confirmarSenha" type="password" formControlName="confirmarSenha" placeholder="Confirme sua senha" />
+        <div class="input-shell">
+          <b aria-hidden="true">&#128274;</b>
+          <input id="confirmarSenha" type="password" formControlName="confirmarSenha" placeholder="Confirme sua senha" />
+        </div>
       </div>
 
       @if (mensagem) {
@@ -42,7 +53,10 @@
       <button class="primary-action" type="submit" [disabled]="carregando">
         {{ carregando ? 'Criando conta...' : 'Criar conta' }}
       </button>
-      <a class="secondary-action" routerLink="/">Voltar</a>
+
+      <div class="form-separator" aria-hidden="true"><span></span></div>
+      <p class="signin-callout">J&aacute; tem conta?</p>
+      <a class="create-link" routerLink="/">Entrar <span aria-hidden="true">&#8250;</span></a>
     </form>
   </section>
 </main>

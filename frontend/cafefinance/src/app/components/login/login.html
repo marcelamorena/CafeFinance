@@ -1,45 +1,58 @@
 <main class="auth-shell">
-  <section class="phone-frame">
-    <header class="topbar">
-      <span class="breadcrumb"></span>
-      <a class="nav-link" routerLink="/cadastro">Criar conta</a>
-    </header>
+  <section class="auth-frame">
+    <aside class="auth-side">
+      <a class="side-logo" routerLink="/" aria-label="Caf&eacute;Finance">
+        <img src="/cafefinance-login-cup-transparent.png" alt="" />
+        <strong>Caf&eacute;Finance</strong>
+      </a>
 
-    <section class="brand-card">
-      <span class="brand-logo-frame">
-        <img class="brand-logo" src="/barista-cafe.png" alt="Caf&eacute;" />
-      </span>
-      <div>
-        <p class="eyebrow">Caf&eacute;Finance</p>
-        <h1>Seu dinheiro no ponto certo</h1>
+      <div class="side-copy">
+        <span>Seu dinheiro no ponto certo.</span>
+        <h1>Organize seu dinheiro com a calma de um bom caf&eacute;.</h1>
+        <p>Cadastre receitas, despesas, parcelas e metas em um painel simples para acompanhar seu m&ecirc;s com mais clareza.</p>
       </div>
-    </section>
+    </aside>
 
-    <form class="login-card" [formGroup]="loginForm" (ngSubmit)="entrar()">
-      <label>
-        E-mail
-        <input type="email" formControlName="email" placeholder="seuemail@exemplo.com" />
-      </label>
+    <section class="auth-panel">
+      <form class="login-card" [formGroup]="loginForm" (ngSubmit)="entrar()">
+        <img class="card-mark" src="/cafefinance-login-cup-transparent.png" alt="" />
+        <h2>Entrar na conta</h2>
+        <p class="form-copy">Acesse sua conta para continuar cuidando das suas finan&ccedil;as.</p>
+        <div class="title-divider" aria-hidden="true"><span></span></div>
 
-      <label>
-        Senha
-        <input type="password" formControlName="password" placeholder="Digite sua senha" />
-      </label>
+        <label>
+          <span>E-mail</span>
+          <div class="input-shell">
+            <b aria-hidden="true">&#9993;</b>
+            <input type="email" formControlName="email" placeholder="seu@email.com" />
+          </div>
+        </label>
 
-      <p class="feedback-message" role="alert" *ngIf="mensagem">{{ mensagem }}</p>
+        <label>
+          <span>Senha</span>
+          <div class="input-shell">
+            <b aria-hidden="true">&#128274;</b>
+            <input type="password" formControlName="password" placeholder="Digite sua senha" />
+          </div>
+        </label>
 
-      <button class="primary-action" type="submit" [disabled]="carregando">
-        {{ carregando ? 'Entrando...' : 'Entrar' }}
-      </button>
-      <a class="secondary-action" routerLink="/cadastro">Criar conta</a>
-    </form>
+        <p class="feedback-message" role="alert" *ngIf="mensagem">{{ mensagem }}</p>
 
-    <section class="barista-tip">
-      <img src="/barista-cafe.png" alt="" />
-      <div>
-        <strong>Dica do Barista</strong>
-        <p>Organize entradas, sa&iacute;das e metas com a calma de um bom caf&eacute;.</p>
-      </div>
+        <div class="form-options">
+          <label class="remember-option">
+            <input type="checkbox" />
+            <span>Lembrar acesso</span>
+          </label>
+        </div>
+
+        <button class="primary-action" type="submit" [disabled]="carregando">
+          {{ carregando ? 'Entrando...' : 'Entrar' }}
+        </button>
+
+        <div class="form-separator" aria-hidden="true"><span></span></div>
+        <p class="signup-callout">Ainda n&atilde;o tem cadastro?</p>
+        <a class="create-link" routerLink="/cadastro">Criar conta <span aria-hidden="true">&#8250;</span></a>
+      </form>
     </section>
   </section>
 </main>

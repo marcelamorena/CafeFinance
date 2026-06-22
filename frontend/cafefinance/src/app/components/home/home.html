@@ -1,329 +1,520 @@
 <main class="workspace notranslate" translate="no">
-  <section class="phone-frame">
-    <header class="topbar">
-      <a routerLink="/" class="brand">
-        <img src="/cafe-finance-logo.png" alt="Caf&eacute;Finance" />
-        <strong>Bom caf&eacute;<ng-container *ngIf="nomeUsuario">, {{ nomeUsuario }}</ng-container>!</strong>
+  <section class="app-shell">
+    <header class="app-topbar">
+      <a routerLink="/home" class="top-brand">
+        <img src="/cafefinance-login-cup-transparent.png" alt="" />
+        <strong>Caf&eacute;Finance</strong>
       </a>
-      <nav>
-        <a routerLink="/economias">Economias</a>
-        <button type="button" class="logout-link" (click)="sair()">Sair</button>
+
+      <nav class="top-nav" aria-label="Navega&ccedil;&atilde;o principal superior">
+        <a routerLink="/perfil" [class.active]="paginaPerfil">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+              <path d="M5 21a7 7 0 0 1 14 0" />
+            </svg>
+          </span>
+          Perfil
+        </a>
+        <a routerLink="/movimentacoes" [class.active]="paginaMovimentacoes">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M16 3h5v5" />
+              <path d="M21 3 13 11" />
+              <path d="M8 21H3v-5" />
+              <path d="M3 21 11 13" />
+            </svg>
+          </span>
+          Movimenta&ccedil;&otilde;es
+        </a>
+        <a routerLink="/home" [class.active]="!paginaMovimentacoes && !paginaPerfil">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z" />
+              <path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17" />
+              <path d="M7 3v2" />
+              <path d="M11 3v2" />
+            </svg>
+          </span>
+          Relat&oacute;rios
+        </a>
+        <a routerLink="/economias">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="8" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </span>
+          Economias
+        </a>
+        <button type="button" (click)="sair()">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <path d="M16 17 21 12 16 7" />
+              <path d="M21 12H9" />
+            </svg>
+          </span>
+          Sair
+        </button>
       </nav>
+
+      <button class="profile-button" type="button" aria-label="Conta pessoal">
+        <span>{{ nomeUsuario ? nomeUsuario.charAt(0).toUpperCase() : 'C' }}</span>
+      </button>
     </header>
 
-    <section class="hero-balance">
-      <div>
-        <p class="eyebrow">Meu saldo de caf&eacute;</p>
-        <h1 [class.negative-balance]="saldoNegativo">{{ saldoTotal }}</h1>
-        <p>{{ textoResumoEconomia }}</p>
-        <a class="hero-link" routerLink="/economias">Ver economias</a>
-      </div>
+    <section class="content-area">
+      <header class="page-header profile-only-header" *ngIf="paginaPerfil">
+        <h1>Bom caf&eacute;<ng-container *ngIf="nomeUsuario">, {{ nomeUsuario }}</ng-container>!</h1>
+      </header>
 
-      <div class="coffee-cup" aria-label="Indicador de economia">
-        <span class="steam steam-one"></span>
-        <span class="steam steam-two"></span>
-        <div class="cup-body">
-          <span class="cup-fill" [style.height.%]="progressoEconomia"></span>
-          <strong>{{ progressoEconomia }}%</strong>
-          <small>{{ textoMetaXicara }}</small>
-        </div>
-      </div>
-    </section>
+      <ng-container *ngIf="paginaMovimentacoes; else paginasSemMovimentacoes">
+        <section class="movement-page">
+          <form id="novo" class="panel new-record" (submit)="salvarRegistro(); $event.preventDefault()">
+            <h2>{{ registroEditandoId ? 'Editar registro' : 'Novo registro' }}</h2>
 
-    <section class="grid-cards">
-      <article class="metric-card">
-        <p>Saldo Total</p>
-        <strong [class.negative-balance]="saldoNegativo">{{ saldoTotal }}</strong>
-        <span class="empty-state">Resultado atual do per&iacute;odo.</span>
-      </article>
-
-      <article class="metric-card">
-        <p>Entradas vs Sa&iacute;das</p>
-        <strong>{{ totalEntradas }} / {{ totalSaidas }}</strong>
-        <span class="empty-state">Comparativo das movimenta&ccedil;&otilde;es cadastradas.</span>
-      </article>
-    </section>
-
-    <section class="records-card">
-      <div class="section-heading">
-        <h2>&Uacute;ltimos Registros</h2>
-        <button type="button" class="records-action" (click)="alternarTransacoes()">
-          <span *ngIf="mostrandoTransacoes; else verTodas">Ocultar transa&ccedil;&otilde;es</span>
-          <ng-template #verTodas>Ver todas as transa&ccedil;&otilde;es</ng-template>
-        </button>
-      </div>
-
-      <ul class="records-list" *ngIf="registrosRecentes.length; else semRegistros">
-        <li
-          *ngFor="let registro of registrosRecentes"
-          [class.income-record]="registro.tipo === 'entrada'"
-          [class.expense-record]="registro.tipo === 'saida'"
-        >
-          <span class="record-icon" [innerHTML]="registro.icone"></span>
-          <div class="record-info">
-            <div>
-              <b>{{ registro.titulo }}</b>
-              <small>{{ registro.data }}</small>
-            </div>
-            <p>
-              <span>{{ registro.tipoLabel }}</span>
-              <span>{{ registro.categoriaLabel }}</span>
-              <span *ngIf="registro.parcela">{{ registro.parcela }}</span>
+            <p class="edit-mode-message" *ngIf="registroEditandoId">
+              <ng-container *ngIf="registroEditandoParcelamento; else edicaoSimples">
+                Esta edi&ccedil;&atilde;o altera a compra parcelada inteira. Informe o valor total, a quantidade de parcelas e a data da primeira parcela.
+              </ng-container>
+              <ng-template #edicaoSimples>Ajuste os dados e salve a edi&ccedil;&atilde;o.</ng-template>
+              <span *ngIf="registroEditandoParcela">{{ registroEditandoParcela }}</span>
             </p>
-          </div>
-          <strong
-            class="record-value"
-            [class.positive-value]="registro.tipo === 'entrada'"
-            [class.negative-value]="registro.tipo === 'saida'"
-          >
-            {{ registro.valor }}
-          </strong>
-          <div class="record-actions">
-            <button type="button" class="edit-record-button" (click)="editarRegistro(registro)">Editar</button>
-            <button
-              type="button"
-              class="delete-record-button"
-              [disabled]="deletandoRegistroId === registro.id"
-              (click)="solicitarExclusao(registro)"
-            >
-              {{ deletandoRegistroId === registro.id ? 'Excluindo...' : 'Excluir' }}
-            </button>
-          </div>
-        </li>
-      </ul>
-      <ng-template #semRegistros>
-        <p class="empty-panel">Nenhum registro cadastrado ainda.</p>
-      </ng-template>
 
-      <section class="transactions-panel" *ngIf="mostrandoTransacoes">
-        <p class="empty-panel" *ngIf="carregandoTransacoes">Carregando transa&ccedil;&otilde;es...</p>
-        <p class="record-feedback error" *ngIf="mensagemTransacoes">{{ mensagemTransacoes }}</p>
-
-        <ng-container *ngIf="!carregandoTransacoes && transacoesPorMes.length; else semTransacoes">
-          <article class="month-group" [class.open-month]="mesAberto === grupo.chave" *ngFor="let grupo of transacoesPorMes">
-            <button
-              type="button"
-              class="month-toggle"
-              [class.active]="mesAberto === grupo.chave"
-              [attr.aria-expanded]="mesAberto === grupo.chave"
-              (click)="alternarMesTransacoes(grupo.chave)"
-            >
-              <span>{{ grupo.mes }}</span>
-            </button>
-
-            <div class="month-details" *ngIf="mesAberto === grupo.chave">
-              <div class="month-summary">
-                <span>Entradas {{ grupo.totalEntradas }}</span>
-                <span>Sa&iacute;das {{ grupo.totalSaidas }}</span>
-                <strong [class.negative-balance]="grupo.saldoNegativo">Saldo {{ grupo.saldo }}</strong>
-              </div>
-
-              <ul class="records-list month-list">
-                <li
-                  *ngFor="let transacao of grupo.transacoes"
-                  [class.income-record]="transacao.tipo === 'entrada'"
-                  [class.expense-record]="transacao.tipo === 'saida'"
-                >
-                  <span class="record-icon" [innerHTML]="transacao.icone"></span>
-                  <div class="record-info">
-                    <div>
-                      <b>{{ transacao.titulo }}</b>
-                      <small>{{ transacao.data }}</small>
-                    </div>
-                  <p>
-                    <span>{{ transacao.tipoLabel }}</span>
-                    <span>{{ transacao.categoriaLabel }}</span>
-                    <span *ngIf="transacao.parcela">{{ transacao.parcela }}</span>
-                  </p>
-                  </div>
-                  <strong
-                    class="record-value"
-                    [class.positive-value]="transacao.tipo === 'entrada'"
-                    [class.negative-value]="transacao.tipo === 'saida'"
-                  >
-                    {{ transacao.valor }}
-                  </strong>
-                  <div class="record-actions">
-                    <button type="button" class="edit-record-button" (click)="editarRegistro(transacao)">Editar</button>
-                    <button
-                      type="button"
-                      class="delete-record-button"
-                      [disabled]="deletandoRegistroId === transacao.id"
-                      (click)="solicitarExclusao(transacao)"
-                    >
-                      {{ deletandoRegistroId === transacao.id ? 'Excluindo...' : 'Excluir' }}
-                    </button>
-                  </div>
-                </li>
-              </ul>
+            <div class="type-toggle" aria-label="Tipo de movimenta&ccedil;&atilde;o">
+              <button
+                type="button"
+                [class.active]="tipoMovimentacao === 'entrada'"
+                [attr.aria-pressed]="tipoMovimentacao === 'entrada'"
+                (click)="selecionarTipo('entrada')"
+              >
+                Entrada
+              </button>
+              <button
+                type="button"
+                [class.active]="tipoMovimentacao === 'saida'"
+                [attr.aria-pressed]="tipoMovimentacao === 'saida'"
+                (click)="selecionarTipo('saida')"
+              >
+                Sa&iacute;da
+              </button>
             </div>
+
+            <div class="form-grid">
+              <label>
+                {{ compraParcelada || registroEditandoParcelamento ? 'Valor total' : 'Valor' }}
+                <div class="money-field">
+                  <span>R$</span>
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    [value]="valorRegistro"
+                    placeholder="0,00"
+                    (input)="formatarValor($event)"
+                    aria-label="Valor do registro"
+                  />
+                </div>
+              </label>
+              <label>
+                {{ registroEditandoParcelamento ? 'Data da primeira parcela' : 'Data' }}
+                <input type="date" [value]="dataRegistro" [max]="hoje" (input)="atualizarDataRegistro($event)" />
+              </label>
+            </div>
+
+            <div class="installment-box" *ngIf="tipoMovimentacao === 'saida' && (!registroEditandoId || registroEditandoParcelamento)">
+              <label class="installment-toggle" *ngIf="!registroEditandoId">
+                <input type="checkbox" [checked]="compraParcelada" (change)="atualizarCompraParcelada($event)" />
+                <span>Compra parcelada</span>
+              </label>
+
+              <p class="installment-edit-note" *ngIf="registroEditandoParcelamento">
+                O sistema vai recalcular o valor de cada parcela automaticamente.
+              </p>
+
+              <div class="installment-fields" *ngIf="compraParcelada || registroEditandoParcelamento">
+                <label>
+                  Parcelas
+                  <input
+                    type="number"
+                    min="2"
+                    max="60"
+                    [value]="quantidadeParcelas"
+                    (input)="atualizarQuantidadeParcelas($event)"
+                  />
+                </label>
+                <p *ngIf="valorParcelaEstimado">Aprox. {{ valorParcelaEstimado }} por m&ecirc;s</p>
+              </div>
+            </div>
+
+            <div class="categories">
+              <button
+                type="button"
+                *ngFor="let categoria of categoriasAtuais"
+                [class.active]="categoriaSelecionada === categoria.nome"
+                [class.more-option]="categoria.acao === 'expandir'"
+                [class.less-option]="categoria.acao === 'recolher'"
+                [attr.aria-pressed]="categoriaSelecionada === categoria.nome"
+                (click)="selecionarCategoria(categoria)"
+              >
+                <strong [innerHTML]="categoria.icone"></strong>
+                <span>{{ categoria.label || categoria.nome }}</span>
+              </button>
+            </div>
+
+            <label>
+              Descri&ccedil;&atilde;o <span class="optional-label">(opcional)</span>
+              <textarea
+                [value]="descricaoRegistro"
+                placeholder="Ex: compra do m&ecirc;s, boleto de luz, freelance da semana"
+                rows="3"
+                (input)="atualizarDescricaoRegistro($event)"
+              ></textarea>
+              <small class="field-hint">{{ descricaoPalavras }}/{{ limitePalavrasDescricao }} palavras</small>
+            </label>
+
+            <aside class="suggestion">
+              <span>&#9749;</span>
+              <p><strong>Sugest&atilde;o do Barista</strong> {{ dicaRegistro }}</p>
+            </aside>
+
+            <p class="record-feedback" [class.error]="registroComErro" *ngIf="mensagemRegistro">{{ mensagemRegistro }}</p>
+
+            <button class="save-button" type="submit" [disabled]="carregandoRegistro">{{ textoBotaoSalvar }}</button>
+            <button
+              class="cancel-edit-button"
+              type="button"
+              *ngIf="registroEditandoId"
+              [disabled]="carregandoRegistro"
+              (click)="cancelarEdicao()"
+            >
+              Cancelar edi&ccedil;&atilde;o
+            </button>
+          </form>
+
+          <section class="panel records-card">
+            <div class="section-heading">
+              <div>
+                <h2>Movimenta&ccedil;&otilde;es cadastradas</h2>
+                <p>Hist&oacute;rico organizado por m&ecirc;s.</p>
+              </div>
+            </div>
+
+            <p class="empty-panel" *ngIf="carregandoTransacoes">Carregando transa&ccedil;&otilde;es...</p>
+            <p class="record-feedback error" *ngIf="mensagemTransacoes">{{ mensagemTransacoes }}</p>
+
+            <ng-container *ngIf="!carregandoTransacoes && transacoesPorMes.length; else semTransacoesMovimentacoes">
+              <section class="transactions-panel">
+                <article class="month-group" [class.open-month]="mesAberto === grupo.chave" *ngFor="let grupo of transacoesPorMes">
+                  <button
+                    type="button"
+                    class="month-toggle"
+                    [class.active]="mesAberto === grupo.chave"
+                    [attr.aria-expanded]="mesAberto === grupo.chave"
+                    (click)="alternarMesTransacoes(grupo.chave)"
+                  >
+                    <span>{{ grupo.mes }}</span>
+                  </button>
+
+                  <div class="month-details" *ngIf="mesAberto === grupo.chave">
+                    <div class="month-summary">
+                      <span>Entradas {{ grupo.totalEntradas }}</span>
+                      <span>Sa&iacute;das {{ grupo.totalSaidas }}</span>
+                      <strong [class.negative-balance]="grupo.saldoNegativo">Saldo {{ grupo.saldo }}</strong>
+                    </div>
+
+                    <ul class="records-list month-list">
+                      <li
+                        *ngFor="let transacao of grupo.transacoes"
+                        [class.income-record]="transacao.tipo === 'entrada'"
+                        [class.expense-record]="transacao.tipo === 'saida'"
+                      >
+                        <span class="record-icon" [innerHTML]="transacao.icone"></span>
+                        <div class="record-info">
+                          <div>
+                            <b>{{ transacao.titulo }}</b>
+                            <small>{{ transacao.data }}</small>
+                          </div>
+                          <p>
+                            <span>{{ transacao.tipoLabel }}</span>
+                            <span>{{ transacao.categoriaLabel }}</span>
+                            <span *ngIf="transacao.parcela">{{ transacao.parcela }}</span>
+                          </p>
+                        </div>
+                        <strong
+                          class="record-value"
+                          [class.positive-value]="transacao.tipo === 'entrada'"
+                          [class.negative-value]="transacao.tipo === 'saida'"
+                        >
+                          {{ transacao.valor }}
+                        </strong>
+                        <div class="record-actions">
+                          <button type="button" class="edit-record-button" (click)="editarRegistro(transacao)">Editar</button>
+                          <button
+                            type="button"
+                            class="delete-record-button"
+                            [disabled]="deletandoRegistroId === transacao.id"
+                            (click)="solicitarExclusao(transacao)"
+                          >
+                            {{ deletandoRegistroId === transacao.id ? 'Excluindo...' : 'Excluir' }}
+                          </button>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </article>
+              </section>
+            </ng-container>
+
+            <ng-template #semTransacoesMovimentacoes>
+              <p class="empty-panel" *ngIf="!carregandoTransacoes && !mensagemTransacoes">
+                Nenhuma transa&ccedil;&atilde;o registrada ainda.
+              </p>
+            </ng-template>
+          </section>
+        </section>
+      </ng-container>
+
+      <ng-template #paginasSemMovimentacoes>
+        <ng-container *ngIf="paginaPerfil; else dashboardPage">
+        <section class="metrics-row">
+          <article class="metric-card">
+            <p>Saldo atual</p>
+            <strong [class.negative-balance]="saldoNegativo">{{ saldoTotal }}</strong>
           </article>
+
+          <article class="metric-card">
+            <p>Receitas</p>
+            <strong class="positive-value">{{ totalEntradas }}</strong>
+          </article>
+
+          <article class="metric-card">
+            <p>Despesas</p>
+            <strong class="negative-value">{{ totalSaidas }}</strong>
+          </article>
+        </section>
+
+        <section class="dashboard-grid">
+          <article class="panel records-card">
+            <div class="section-heading">
+              <div>
+                <h2>&Uacute;ltimas movimenta&ccedil;&otilde;es</h2>
+                <p>Acompanhe os registros mais recentes.</p>
+              </div>
+              <a class="primary-link" routerLink="/movimentacoes">+ Novo registro</a>
+            </div>
+
+            <ul class="records-list dashboard-records" *ngIf="registrosRecentes.length; else semRegistros">
+              <li
+                *ngFor="let registro of registrosRecentes"
+                [class.income-record]="registro.tipo === 'entrada'"
+                [class.expense-record]="registro.tipo === 'saida'"
+              >
+                <span class="record-icon" [innerHTML]="registro.icone"></span>
+                <div class="record-info">
+                  <div>
+                    <b>{{ registro.titulo }}</b>
+                    <small>{{ registro.data }}</small>
+                  </div>
+                  <p>
+                    <span>{{ registro.tipoLabel }}</span>
+                    <span>{{ registro.categoriaLabel }}</span>
+                    <span *ngIf="registro.parcela">{{ registro.parcela }}</span>
+                  </p>
+                </div>
+                <strong
+                  class="record-value"
+                  [class.positive-value]="registro.tipo === 'entrada'"
+                  [class.negative-value]="registro.tipo === 'saida'"
+                >
+                  {{ registro.valor }}
+                </strong>
+              </li>
+            </ul>
+            <ng-template #semRegistros>
+              <p class="empty-panel">Nenhum registro cadastrado ainda.</p>
+            </ng-template>
+          </article>
+
+          <article class="panel chart-card">
+            <h2>Gastos por categoria</h2>
+            <div class="category-dashboard" *ngIf="gastosPorCategoria.length; else semCategorias">
+              <article *ngFor="let gasto of gastosPorCategoria">
+                <div>
+                  <strong>{{ gasto.nome }}</strong>
+                  <span>{{ gasto.valor }}</span>
+                </div>
+                <i>
+                  <b [style.width.%]="gasto.percentual"></b>
+                </i>
+              </article>
+            </div>
+            <ng-template #semCategorias>
+              <p class="empty-panel">Os gastos por categoria v&atilde;o aparecer depois do primeiro registro de sa&iacute;da.</p>
+            </ng-template>
+          </article>
+
+          <article class="panel goal-card">
+            <h2>Meta de economia</h2>
+            <div class="coffee-cup" aria-label="Indicador de economia">
+              <span class="steam steam-one"></span>
+              <span class="steam steam-two"></span>
+              <div class="cup-body">
+                <span class="cup-fill" [style.height.%]="progressoEconomia"></span>
+                <strong>{{ progressoEconomia }}%</strong>
+                <small>{{ textoMetaXicara }}</small>
+              </div>
+            </div>
+            <p>{{ textoResumoEconomia }}</p>
+            <a class="secondary-link" routerLink="/economias">Ver economias</a>
+          </article>
+        </section>
         </ng-container>
+      </ng-template>
 
-        <ng-template #semTransacoes>
-          <p class="empty-panel" *ngIf="!carregandoTransacoes && !mensagemTransacoes">
-            Nenhuma transa&ccedil;&atilde;o registrada ainda.
-          </p>
-        </ng-template>
-      </section>
-    </section>
-
-    <section class="report-card">
-      <h2>Meus gastos por categoria</h2>
-      <div class="category-dashboard" *ngIf="gastosPorCategoria.length; else semCategorias">
-        <article *ngFor="let gasto of gastosPorCategoria">
-          <div>
-            <strong>{{ gasto.nome }}</strong>
-            <span>{{ gasto.valor }}</span>
+      <ng-template #dashboardPage>
+        <section class="dashboard-chart-page">
+          <div class="dashboard-toolbar">
+            <a class="primary-link" routerLink="/movimentacoes">Registrar movimenta&ccedil;&atilde;o</a>
           </div>
-          <i>
-            <b [style.width.%]="gasto.percentual"></b>
-          </i>
-        </article>
-      </div>
-      <ng-template #semCategorias>
-        <p class="empty-panel">Os gastos por categoria v&atilde;o aparecer aqui depois do primeiro registro de sa&iacute;da.</p>
+
+          <p class="empty-panel" *ngIf="carregandoTransacoes">Carregando dashboards...</p>
+
+          <ng-container *ngIf="!carregandoTransacoes && mesesDashboard.length; else semDadosDashboard">
+            <section class="dashboard-months" aria-label="Meses com movimenta&ccedil;&otilde;es">
+              <button
+                type="button"
+                class="dashboard-month-button"
+                *ngFor="let grupo of mesesDashboard"
+                [class.active]="mesDashboardSelecionado === grupo.chave"
+                [attr.aria-pressed]="mesDashboardSelecionado === grupo.chave"
+                (click)="selecionarMesDashboard(grupo.chave)"
+              >
+                <span>{{ grupo.mes }}</span>
+                <small>{{ grupo.transacoes.length }} registro{{ grupo.transacoes.length === 1 ? '' : 's' }}</small>
+              </button>
+            </section>
+
+            <section class="charts-grid" *ngIf="mesDashboardAtual as mesDashboard">
+              <section class="dashboard-summary-row wide-chart">
+                <article class="dashboard-summary-card">
+                  <span>Saldo atual acumulado</span>
+                  <strong [class.negative-balance]="saldoNegativo">{{ saldoTotal }}</strong>
+                  <small>Continua entre os meses</small>
+                </article>
+
+                <article class="dashboard-summary-card">
+                  <span>Entradas do m&ecirc;s</span>
+                  <strong class="positive-value">{{ mesDashboard.totalEntradas }}</strong>
+                  <small>Reinicia no dia 1</small>
+                </article>
+
+                <article class="dashboard-summary-card">
+                  <span>Sa&iacute;das do m&ecirc;s</span>
+                  <strong class="negative-value">{{ mesDashboard.totalSaidas }}</strong>
+                  <small>Reinicia no dia 1</small>
+                </article>
+
+                <article class="dashboard-summary-card">
+                  <span>Fatura parcelada</span>
+                  <strong>{{ mesDashboard.faturaParcelada }}</strong>
+                  <small>{{ mesDashboard.mes }}</small>
+                </article>
+              </section>
+
+              <article class="panel chart-panel wide-chart">
+                <div class="section-heading">
+                  <div>
+                    <h2>Entradas x sa&iacute;das</h2>
+                    <p>{{ mesDashboard.mes }}</p>
+                  </div>
+                </div>
+                <div class="chart-canvas">
+                  <canvas #fluxoMensalCanvas></canvas>
+                </div>
+              </article>
+
+              <article class="panel chart-panel">
+                <h2>Gastos por categoria</h2>
+                <ng-container *ngIf="mesDashboard.gastosPorCategoria.length; else semCategoriasDashboard">
+                  <div class="chart-canvas small-chart">
+                    <canvas #categoriaMensalCanvas></canvas>
+                  </div>
+                  <div class="category-dashboard chart-category-list">
+                    <article *ngFor="let gasto of mesDashboard.gastosPorCategoria">
+                      <div>
+                        <strong>{{ gasto.nome }}</strong>
+                        <span>{{ gasto.valor }}</span>
+                      </div>
+                      <i>
+                        <b [style.width.%]="gasto.percentual"></b>
+                      </i>
+                    </article>
+                  </div>
+                </ng-container>
+                <ng-template #semCategoriasDashboard>
+                  <p class="empty-panel">Este m&ecirc;s ainda n&atilde;o tem sa&iacute;das por categoria.</p>
+                </ng-template>
+              </article>
+
+              <article class="panel chart-panel">
+                <h2>Evolu&ccedil;&atilde;o no m&ecirc;s</h2>
+                <div class="chart-canvas small-chart">
+                  <canvas #evolucaoMensalCanvas></canvas>
+                </div>
+              </article>
+
+              <article class="panel chart-panel wide-chart">
+                <div class="section-heading">
+                  <div>
+                    <h2>Fatura parcelada prevista</h2>
+                    <p>Valor j&aacute; comprometido por compras parceladas em cada m&ecirc;s.</p>
+                  </div>
+                </div>
+
+                <ng-container *ngIf="mesesComFaturaParcelada.length; else semFaturaParcelada">
+                  <div class="chart-canvas">
+                    <canvas #faturaParceladaCanvas></canvas>
+                  </div>
+
+                  <div class="installment-forecast-list">
+                    <article *ngFor="let grupo of mesesComFaturaParcelada">
+                      <span>{{ grupo.mes }}</span>
+                      <strong>{{ grupo.faturaParcelada }}</strong>
+                    </article>
+                  </div>
+                </ng-container>
+
+                <ng-template #semFaturaParcelada>
+                  <p class="empty-panel">Nenhuma compra parcelada cadastrada ainda.</p>
+                </ng-template>
+              </article>
+            </section>
+          </ng-container>
+
+          <ng-template #semDadosDashboard>
+            <p class="empty-panel" *ngIf="!carregandoTransacoes">Cadastre entradas ou sa&iacute;das para gerar dashboards por m&ecirc;s.</p>
+          </ng-template>
+        </section>
       </ng-template>
     </section>
+  </section>
 
-    <form id="novo" class="new-record" (submit)="salvarRegistro(); $event.preventDefault()">
-      <span class="floating-add">+</span>
-      <h2>{{ registroEditandoId ? 'Editar registro' : 'Adicionar novo registro' }}</h2>
-
-      <p class="edit-mode-message" *ngIf="registroEditandoId">
-        <ng-container *ngIf="registroEditandoParcelamento; else edicaoSimples">
-          Esta edi&ccedil;&atilde;o altera a compra parcelada inteira. Informe o valor total, a quantidade de parcelas e a data da primeira parcela.
-        </ng-container>
-        <ng-template #edicaoSimples>Ajuste os dados e salve a edi&ccedil;&atilde;o.</ng-template>
-        <span *ngIf="registroEditandoParcela">{{ registroEditandoParcela }}</span>
+  <section class="confirm-layer" *ngIf="registroParaExcluir as registroExclusao" role="dialog" aria-modal="true">
+    <article class="confirm-box">
+      <h2>Confirmar exclus&atilde;o</h2>
+      <p *ngIf="!registroExclusao.parcelamentoId">Tem certeza que deseja excluir este registro?</p>
+      <p *ngIf="registroExclusao.parcelamentoId">
+        Tem certeza que deseja excluir esta compra parcelada?
+        Todas as {{ registroExclusao.totalParcelas || '' }} parcelas ser&atilde;o removidas.
       </p>
-
-      <div class="type-toggle" aria-label="Tipo de movimenta&ccedil;&atilde;o">
-        <button
-          type="button"
-          [class.active]="tipoMovimentacao === 'entrada'"
-          [attr.aria-pressed]="tipoMovimentacao === 'entrada'"
-          (click)="selecionarTipo('entrada')"
-        >
-          Entrada
-        </button>
-        <button
-          type="button"
-          [class.active]="tipoMovimentacao === 'saida'"
-          [attr.aria-pressed]="tipoMovimentacao === 'saida'"
-          (click)="selecionarTipo('saida')"
-        >
-          Sa&iacute;da
+      <div class="confirm-actions">
+        <button type="button" class="cancel-edit-button" [disabled]="deletandoRegistroId" (click)="cancelarExclusao()">Cancelar</button>
+        <button type="button" class="save-button" [disabled]="deletandoRegistroId" (click)="confirmarExclusao()">
+          {{ deletandoRegistroId ? 'Excluindo...' : 'Confirmar' }}
         </button>
       </div>
-
-      <div class="form-grid">
-        <label>
-          {{ compraParcelada || registroEditandoParcelamento ? 'Valor total' : 'Valor' }}
-          <div class="money-field">
-            <span>R$</span>
-            <input
-              type="text"
-              inputmode="numeric"
-              autocomplete="off"
-              [value]="valorRegistro"
-              placeholder="0,00"
-              (input)="formatarValor($event)"
-              aria-label="Valor do registro"
-            />
-          </div>
-        </label>
-        <label>
-          {{ registroEditandoParcelamento ? 'Data da primeira parcela' : 'Data' }}
-          <input type="date" [value]="dataRegistro" [max]="hoje" (input)="atualizarDataRegistro($event)" />
-        </label>
-      </div>
-
-      <div class="installment-box" *ngIf="tipoMovimentacao === 'saida' && (!registroEditandoId || registroEditandoParcelamento)">
-        <label class="installment-toggle" *ngIf="!registroEditandoId">
-          <input type="checkbox" [checked]="compraParcelada" (change)="atualizarCompraParcelada($event)" />
-          <span>Compra parcelada</span>
-        </label>
-
-        <p class="installment-edit-note" *ngIf="registroEditandoParcelamento">
-          O sistema vai recalcular o valor de cada parcela automaticamente.
-        </p>
-
-        <div class="installment-fields" *ngIf="compraParcelada || registroEditandoParcelamento">
-          <label>
-            Parcelas
-            <input
-              type="number"
-              min="2"
-              max="60"
-              [value]="quantidadeParcelas"
-              (input)="atualizarQuantidadeParcelas($event)"
-            />
-          </label>
-          <p *ngIf="valorParcelaEstimado">Aprox. {{ valorParcelaEstimado }} por m&ecirc;s</p>
-        </div>
-      </div>
-
-      <div class="categories">
-        <button
-          type="button"
-          *ngFor="let categoria of categoriasAtuais"
-          [class.active]="categoriaSelecionada === categoria.nome"
-          [class.more-option]="categoria.acao === 'expandir'"
-          [class.less-option]="categoria.acao === 'recolher'"
-          [attr.aria-pressed]="categoriaSelecionada === categoria.nome"
-          (click)="selecionarCategoria(categoria)"
-        >
-          <strong [innerHTML]="categoria.icone"></strong>
-          <span>{{ categoria.label || categoria.nome }}</span>
-        </button>
-      </div>
-
-      <label>
-        Descri&ccedil;&atilde;o <span class="optional-label">(opcional)</span>
-        <textarea
-          [value]="descricaoRegistro"
-          placeholder="Ex: compra do m&ecirc;s, boleto de luz, freelance da semana"
-          rows="3"
-          (input)="atualizarDescricaoRegistro($event)"
-        ></textarea>
-        <small class="field-hint">{{ descricaoPalavras }}/{{ limitePalavrasDescricao }} palavras</small>
-      </label>
-
-      <aside class="suggestion">
-        <span>&#9749;</span>
-        <p><strong>Sugest&atilde;o do Barista</strong> {{ dicaRegistro }}</p>
-      </aside>
-
-      <p class="record-feedback" [class.error]="registroComErro" *ngIf="mensagemRegistro">{{ mensagemRegistro }}</p>
-
-      <button class="save-button" type="submit" [disabled]="carregandoRegistro">{{ textoBotaoSalvar }}</button>
-      <button
-        class="cancel-edit-button"
-        type="button"
-        *ngIf="registroEditandoId"
-        [disabled]="carregandoRegistro"
-        (click)="cancelarEdicao()"
-      >
-        Cancelar edi&ccedil;&atilde;o
-      </button>
-    </form>
-
-    <section class="confirm-layer" *ngIf="registroParaExcluir as registroExclusao" role="dialog" aria-modal="true">
-      <article class="confirm-box">
-        <h2>Confirmar exclus&atilde;o</h2>
-        <p *ngIf="!registroExclusao.parcelamentoId">Tem certeza que deseja excluir este registro?</p>
-        <p *ngIf="registroExclusao.parcelamentoId">
-          Tem certeza que deseja excluir esta compra parcelada?
-          Todas as {{ registroExclusao.totalParcelas || '' }} parcelas ser&atilde;o removidas.
-        </p>
-        <div class="confirm-actions">
-          <button type="button" class="cancel-edit-button" [disabled]="deletandoRegistroId" (click)="cancelarExclusao()">Cancelar</button>
-          <button type="button" class="save-button" [disabled]="deletandoRegistroId" (click)="confirmarExclusao()">
-            {{ deletandoRegistroId ? 'Excluindo...' : 'Confirmar' }}
-          </button>
-        </div>
-      </article>
-    </section>
+    </article>
   </section>
 </main>

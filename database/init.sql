@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS economias (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     meta_id INTEGER REFERENCES metas_economia(id) ON DELETE SET NULL,
+    movimentacao_id INTEGER REFERENCES movimentacoes(id) ON DELETE SET NULL,
     valor NUMERIC(12, 2) NOT NULL CHECK (valor > 0),
     data_economia DATE NOT NULL,
     descricao TEXT,
@@ -98,6 +99,15 @@ CREATE INDEX IF NOT EXISTS economias_user_data_idx
 
 CREATE INDEX IF NOT EXISTS economias_meta_idx
     ON economias (meta_id);
+
+CREATE INDEX IF NOT EXISTS economias_user_meta_idx
+    ON economias (user_id, meta_id);
+
+CREATE INDEX IF NOT EXISTS economias_movimentacao_idx
+    ON economias (movimentacao_id);
+
+CREATE INDEX IF NOT EXISTS metas_economia_user_nome_lower_idx
+    ON metas_economia (user_id, LOWER(nome));
 
 INSERT INTO categorias (nome, tipo, icone, cor)
 VALUES

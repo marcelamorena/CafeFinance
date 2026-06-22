@@ -61,8 +61,24 @@ if ($path === '/metas-economia' && $method === 'POST') {
     (new EconomiaController())->criarMeta();
 }
 
+if (preg_match('#^/metas-economia/(\d+)$#', $path, $matches) && in_array($method, ['PUT', 'PATCH'], true)) {
+    (new EconomiaController())->atualizarMeta((int) $matches[1]);
+}
+
+if (preg_match('#^/metas-economia/(\d+)$#', $path, $matches) && $method === 'DELETE') {
+    (new EconomiaController())->excluirMeta((int) $matches[1]);
+}
+
 if ($path === '/economias' && $method === 'POST') {
     (new EconomiaController())->guardar();
+}
+
+if (preg_match('#^/economias/(\d+)$#', $path, $matches) && in_array($method, ['PUT', 'PATCH'], true)) {
+    (new EconomiaController())->atualizarEconomia((int) $matches[1]);
+}
+
+if (preg_match('#^/economias/(\d+)$#', $path, $matches) && $method === 'DELETE') {
+    (new EconomiaController())->excluirEconomia((int) $matches[1]);
 }
 
 // Qualquer rota nao mapeada cai aqui.

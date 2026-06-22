@@ -149,6 +149,7 @@ export interface MetaEconomia {
 export interface EconomiaItem {
   id: number;
   meta_id: number;
+  movimentacao_id?: number | null;
   meta_nome: string;
   valor: number;
   data_economia: string;
@@ -159,6 +160,7 @@ export interface EconomiaItem {
 export interface CriarMetaEconomiaRequest {
   nome: string;
   valor_meta: string;
+  valor_atual?: string;
   data_limite?: string;
 }
 
@@ -169,27 +171,52 @@ export interface GuardarEconomiaRequest {
   descricao?: string;
 }
 
+export type AtualizarMetaEconomiaRequest = CriarMetaEconomiaRequest;
+
+export interface EconomiaDashboard {
+  total_economizado: number;
+  meta_principal?: MetaEconomia | null;
+  metas: MetaEconomia[];
+  historico_recente: EconomiaItem[];
+}
+
 export interface MetaEconomiaResponse {
   success: boolean;
   message: string;
   meta: MetaEconomia;
+  dashboard?: EconomiaDashboard;
 }
 
 export interface GuardarEconomiaResponse {
   success: boolean;
   message: string;
   economia: EconomiaItem;
+  meta?: MetaEconomia;
+  metas?: MetaEconomia[];
+  total_economizado?: number;
+  dashboard?: EconomiaDashboard;
+}
+
+export interface ExcluirMetaEconomiaResponse {
+  success: boolean;
+  message: string;
+  id?: number;
+  dashboard?: EconomiaDashboard;
+}
+
+export interface ExcluirEconomiaResponse {
+  success: boolean;
+  message: string;
+  id: number;
+  meta?: MetaEconomia | null;
+  total_economizado?: number;
+  dashboard?: EconomiaDashboard;
 }
 
 export interface EconomiaResumoResponse {
   success: boolean;
   message: string;
-  dashboard: {
-    total_economizado: number;
-    meta_principal?: MetaEconomia | null;
-    metas: MetaEconomia[];
-    historico_recente: EconomiaItem[];
-  };
+  dashboard: EconomiaDashboard;
 }
 
 @Injectable({
@@ -239,8 +266,24 @@ export class AuthService {
     return this.http.post<MetaEconomiaResponse>(`${this.apiUrl}/metas-economia`, dados, { withCredentials: true });
   }
 
+  atualizarMetaEconomia(id: number, dados: AtualizarMetaEconomiaRequest) {
+    return this.http.put<MetaEconomiaResponse>(`${this.apiUrl}/metas-economia/${id}`, dados, { withCredentials: true });
+  }
+
+  excluirMetaEconomia(id: number) {
+    return this.http.delete<ExcluirMetaEconomiaResponse>(`${this.apiUrl}/metas-economia/${id}`, { withCredentials: true });
+  }
+
   guardarEconomia(dados: GuardarEconomiaRequest) {
     return this.http.post<GuardarEconomiaResponse>(`${this.apiUrl}/economias`, dados, { withCredentials: true });
+  }
+
+  atualizarEconomia(id: number, dados: GuardarEconomiaRequest) {
+    return this.http.put<GuardarEconomiaResponse>(`${this.apiUrl}/economias/${id}`, dados, { withCredentials: true });
+  }
+
+  excluirEconomia(id: number) {
+    return this.http.delete<ExcluirEconomiaResponse>(`${this.apiUrl}/economias/${id}`, { withCredentials: true });
   }
 
   resumoEconomias() {

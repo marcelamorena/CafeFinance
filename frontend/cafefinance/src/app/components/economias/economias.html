@@ -1,130 +1,349 @@
 <main class="workspace notranslate" translate="no">
-  <section class="page-shell">
-    <header class="topbar">
-      <a routerLink="/home" class="brand">
-        <img src="/cafe-finance-logo.png" alt="Caf&eacute;Finance" />
-        <strong>Economias<ng-container *ngIf="nomeUsuario"> de {{ nomeUsuario }}</ng-container></strong>
+  <section class="app-shell">
+    <header class="app-topbar">
+      <a routerLink="/home" class="top-brand">
+        <img src="/cafefinance-login-cup-transparent.png" alt="" />
+        <strong>Caf&eacute;Finance</strong>
       </a>
-      <nav>
-        <a routerLink="/home">Home</a>
-        <button type="button" (click)="sair()">Sair</button>
+
+      <nav class="top-nav" aria-label="Navega&ccedil;&atilde;o principal superior">
+        <a routerLink="/perfil">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+              <path d="M5 21a7 7 0 0 1 14 0" />
+            </svg>
+          </span>
+          Perfil
+        </a>
+        <a routerLink="/movimentacoes">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M16 3h5v5" />
+              <path d="M21 3 13 11" />
+              <path d="M8 21H3v-5" />
+              <path d="M3 21 11 13" />
+            </svg>
+          </span>
+          Movimenta&ccedil;&otilde;es
+        </a>
+        <a routerLink="/home">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z" />
+              <path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17" />
+              <path d="M7 3v2" />
+              <path d="M11 3v2" />
+            </svg>
+          </span>
+          Relat&oacute;rios
+        </a>
+        <a routerLink="/economias" class="active">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="8" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </span>
+          Economias
+        </a>
+        <button type="button" (click)="sair()">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <path d="M16 17 21 12 16 7" />
+              <path d="M21 12H9" />
+            </svg>
+          </span>
+          Sair
+        </button>
       </nav>
+
+      <button class="profile-button" type="button" aria-label="Conta pessoal">
+        <span>{{ nomeUsuario ? nomeUsuario.charAt(0).toUpperCase() : 'C' }}</span>
+      </button>
     </header>
 
-    <section class="hero">
-      <div>
-        <p class="eyebrow">X&iacute;cara de economia</p>
-        <h1>{{ totalEconomizado }}</h1>
-        <p>{{ textoResumoEconomia }}</p>
-      </div>
-
-      <div class="coffee-cup" aria-label="Progresso da meta de economia">
-        <span class="steam steam-one"></span>
-        <span class="steam steam-two"></span>
-        <div class="cup-body">
-          <span class="cup-fill" [style.height.%]="progressoEconomia"></span>
-          <strong>{{ progressoEconomia }}%</strong>
-          <small>{{ textoMetaXicara }}</small>
+    <section class="content-area">
+      <header class="page-header">
+        <div>
+          <h1>Economias<ng-container *ngIf="nomeUsuario"> de {{ nomeUsuario }}</ng-container></h1>
+          <p>Metas, reservas e valores guardados.</p>
         </div>
-      </div>
-    </section>
+        <span class="account-chip">Conta pessoal</span>
+      </header>
 
-    <section class="content-grid">
-      <article class="panel">
-        <h2>Criar meta</h2>
-        <form class="stack-form" (submit)="criarMetaEconomia(); $event.preventDefault()">
-          <label>
-            Nome da meta
-            <input type="text" [value]="nomeMetaEconomia" placeholder="Ex: reserva de emerg&ecirc;ncia" (input)="atualizarNomeMetaEconomia($event)" />
-          </label>
+      <section class="hero">
+        <div>
+          <p class="eyebrow">X&iacute;cara de economia</p>
+          <h2>{{ totalEconomizado }}</h2>
+          <p>{{ textoResumoEconomia }}</p>
+        </div>
 
-          <label>
-            Valor da meta
-            <div class="money-field">
-              <span>R$</span>
-              <input type="text" inputmode="numeric" [value]="valorMetaEconomia" placeholder="0,00" (input)="formatarValorMetaEconomia($event)" />
-            </div>
-          </label>
+        <div class="coffee-cup" aria-label="Progresso da meta de economia">
+          <span class="steam steam-one"></span>
+          <span class="steam steam-two"></span>
+          <span class="cup-saucer"></span>
+          <div class="cup-body">
+            <span class="cup-rim"></span>
+            <canvas #resumoCupCanvas class="cup-chart" [attr.data-progress]="progressoEconomia"></canvas>
+            <span class="cup-bean" aria-hidden="true"></span>
+            <strong>{{ progressoEconomia }}%</strong>
+            <small>{{ textoMetaXicara }}</small>
+          </div>
+        </div>
+      </section>
 
-          <label>
-            Data limite <span class="optional-label">(opcional)</span>
-            <input type="date" [value]="dataLimiteEconomia" (input)="atualizarDataLimiteEconomia($event)" />
-          </label>
-
-          <button type="submit" [disabled]="criandoMetaEconomia">{{ textoBotaoMetaEconomia }}</button>
-        </form>
-      </article>
-
-      <article class="panel">
-        <h2>Guardar economia</h2>
-        <form class="stack-form" (submit)="guardarEconomia(); $event.preventDefault()">
-          <label>
-            Meta
-            <select [value]="metaEconomiaSelecionadaId || ''" (change)="selecionarMetaEconomia($event)">
-              <option value="">Escolha uma meta</option>
-              <option *ngFor="let meta of metasEconomia" [value]="meta.id">{{ meta.nome }}</option>
-            </select>
-          </label>
-
-          <div class="form-grid">
+      <section class="content-grid">
+        <article class="panel">
+          <h2>{{ tituloFormularioMeta }}</h2>
+          <p class="edit-hint" *ngIf="metaEditandoId">
+            Edite o nome, o objetivo total, o valor j&aacute; guardado e a data limite.
+          </p>
+          <form class="stack-form" (submit)="criarMetaEconomia(); $event.preventDefault()">
             <label>
-              Valor guardado
+              Nome da meta
+              <input type="text" [value]="nomeMetaEconomia" placeholder="Ex: reserva de emerg&ecirc;ncia" (input)="atualizarNomeMetaEconomia($event)" />
+            </label>
+
+            <label>
+              {{ rotuloValorMeta }}
               <div class="money-field">
                 <span>R$</span>
-                <input type="text" inputmode="numeric" [value]="valorEconomia" placeholder="0,00" (input)="formatarValorEconomia($event)" />
+                <input type="text" inputmode="numeric" [value]="valorMetaEconomia" placeholder="0,00" (input)="formatarValorMetaEconomia($event)" />
+              </div>
+            </label>
+
+            <label *ngIf="metaEditandoId">
+              Valor j&aacute; guardado
+              <div class="money-field">
+                <span>R$</span>
+                <input type="text" inputmode="numeric" [value]="valorAtualMetaEconomia" placeholder="0,00" (input)="formatarValorAtualMetaEconomia($event)" />
               </div>
             </label>
 
             <label>
-              Data
-              <input type="date" [value]="dataEconomia" [max]="hoje" (input)="atualizarDataEconomia($event)" />
+              Data limite <span class="optional-label">(opcional)</span>
+              <input type="date" [value]="dataLimiteEconomia" (input)="atualizarDataLimiteEconomia($event)" />
             </label>
+
+            <button type="submit" [disabled]="criandoMetaEconomia">{{ textoBotaoMetaEconomia }}</button>
+            <button class="ghost-button" type="button" *ngIf="metaEditandoId" [disabled]="criandoMetaEconomia" (click)="cancelarEdicaoMeta()">
+              Cancelar edi&ccedil;&atilde;o
+            </button>
+          </form>
+        </article>
+
+        <article class="panel economy-form-panel">
+          <h2>{{ economiaEditandoId ? 'Editar economia' : 'Guardar economia' }}</h2>
+          <p class="edit-hint" *ngIf="economiaEditandoId">
+            Altere a meta, o valor guardado, a data ou a descri&ccedil;&atilde;o.
+          </p>
+          <form class="stack-form" (submit)="guardarEconomia(); $event.preventDefault()">
+            <label>
+              Meta
+              <select [value]="metaEconomiaSelecionadaId || ''" (change)="selecionarMetaEconomia($event)">
+                <option value="">{{ carregandoResumoEconomias ? 'Carregando metas...' : 'Escolha uma meta' }}</option>
+                <option *ngFor="let meta of metasParaFormularioEconomia" [value]="meta.id">{{ meta.nome }}</option>
+              </select>
+            </label>
+
+            <div class="form-grid">
+              <label>
+                {{ rotuloValorEconomia }}
+                <div class="money-field">
+                  <span>R$</span>
+                  <input type="text" inputmode="numeric" [value]="valorEconomia" placeholder="0,00" (input)="formatarValorEconomia($event)" />
+                </div>
+              </label>
+
+              <label>
+                Data
+                <input type="date" [value]="dataEconomia" [max]="hoje" (input)="atualizarDataEconomia($event)" />
+              </label>
+            </div>
+
+            <label>
+              Descri&ccedil;&atilde;o <span class="optional-label">(opcional)</span>
+              <textarea [value]="descricaoEconomia" rows="3" placeholder="Ex: sobrou do mercado" (input)="atualizarDescricaoEconomia($event)"></textarea>
+              <small class="field-hint">{{ economiaPalavras }}/{{ limitePalavrasDescricao }} palavras</small>
+            </label>
+
+            <p class="feedback" [class.error]="economiaComErro" *ngIf="mensagemEconomia">{{ mensagemEconomia }}</p>
+            <button type="submit" [disabled]="carregandoEconomia || !metasParaFormularioEconomia.length">{{ textoBotaoGuardarEconomia }}</button>
+            <button class="ghost-button" type="button" *ngIf="economiaEditandoId" [disabled]="carregandoEconomia" (click)="cancelarEdicaoEconomia()">
+              Cancelar edi&ccedil;&atilde;o
+            </button>
+          </form>
+        </article>
+
+        <article class="panel goals-panel">
+          <h2>Metas cadastradas</h2>
+
+          <div class="goals-list" *ngIf="metasAtivas.length; else semMetasEconomia">
+            <article class="goal-card" *ngFor="let meta of metasAtivas">
+              <div class="goal-card-main">
+                <span class="mini-cup" [attr.aria-label]="meta.percentual + '% conclu&iacute;do'">
+                  <span class="mini-steam mini-steam-one"></span>
+                  <span class="mini-steam mini-steam-two"></span>
+                  <span class="mini-cup-handle"></span>
+                  <span class="mini-cup-body">
+                    <canvas #goalCupCanvas class="mini-cup-chart" [attr.data-meta-id]="meta.id" [attr.data-progress]="meta.percentual"></canvas>
+                    <strong>{{ meta.percentual }}%</strong>
+                  </span>
+                </span>
+
+                <span class="goal-copy">
+                  <strong>{{ meta.nome }}</strong>
+                  <span>{{ meta.valorAtual }} / {{ meta.valorMeta }}</span>
+                </span>
+              </div>
+              <span class="goal-progress"><b [style.width.%]="meta.percentual"></b></span>
+              <footer class="goal-footer">
+                <small>{{ meta.percentual }}% conclu&iacute;do</small>
+                <span class="goal-actions">
+                  <button type="button" class="ghost-button" (click)="editarMetaEconomia(meta)">Editar</button>
+                  <button type="button" class="ghost-button danger-button" [disabled]="metaExcluindoId === meta.id" (click)="excluirMetaEconomia(meta)">
+                    {{ metaExcluindoId === meta.id ? 'Excluindo...' : 'Excluir' }}
+                  </button>
+                </span>
+              </footer>
+            </article>
           </div>
 
-          <label>
-            Descri&ccedil;&atilde;o <span class="optional-label">(opcional)</span>
-            <textarea [value]="descricaoEconomia" rows="3" placeholder="Ex: sobrou do mercado" (input)="atualizarDescricaoEconomia($event)"></textarea>
-            <small class="field-hint">{{ economiaPalavras }}/{{ limitePalavrasDescricao }} palavras</small>
-          </label>
+          <ng-template #semMetasEconomia>
+            <p class="empty-panel">{{ carregandoResumoEconomias ? 'Carregando metas...' : 'Nenhuma meta ativa no momento.' }}</p>
+          </ng-template>
+        </article>
 
-          <p class="feedback" [class.error]="economiaComErro" *ngIf="mensagemEconomia">{{ mensagemEconomia }}</p>
-          <button type="submit" [disabled]="carregandoEconomia || !metasEconomia.length">{{ textoBotaoGuardarEconomia }}</button>
-        </form>
-      </article>
+        <article class="panel goals-panel completed-goals-panel">
+          <h2>Caf&eacute;s Conclu&iacute;dos</h2>
 
-      <article class="panel goals-panel">
-        <h2>Metas cadastradas</h2>
+          <button
+            type="button"
+            class="completed-toggle"
+            *ngIf="metasConcluidas.length; else semMetasConcluidas"
+            [class.open]="mostrarCafesConcluidos"
+            [attr.aria-expanded]="mostrarCafesConcluidos"
+            (click)="alternarCafesConcluidos()"
+          >
+            <span class="completed-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 8h12v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z" />
+                <path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16" />
+                <path d="M7 4v2" />
+                <path d="M11 4v2" />
+              </svg>
+            </span>
+            <span>
+              <strong>{{ metasConcluidas.length }} caf&eacute;{{ metasConcluidas.length === 1 ? '' : 's' }}</strong>
+              <small>{{ mostrarCafesConcluidos ? 'Ocultar metas conclu&iacute;das' : 'Ver metas conclu&iacute;das' }}</small>
+            </span>
+            <i aria-hidden="true">{{ mostrarCafesConcluidos ? '-' : '+' }}</i>
+          </button>
 
-        <div class="goals-list" *ngIf="metasEconomia.length; else semMetasEconomia">
-          <article *ngFor="let meta of metasEconomia">
-            <div>
-              <strong>{{ meta.nome }}</strong>
-              <span>{{ meta.valorAtual }} / {{ meta.valorMeta }}</span>
-            </div>
-            <i><b [style.width.%]="meta.percentual"></b></i>
-            <small>{{ meta.percentual }}% conclu&iacute;do</small>
-          </article>
-        </div>
+          <div class="goals-list completed-goals-list" *ngIf="metasConcluidas.length && mostrarCafesConcluidos">
+            <article class="goal-card" *ngFor="let meta of metasConcluidas">
+              <div class="goal-card-main">
+                <span class="mini-cup completed-mini-cup" aria-label="Meta conclu&iacute;da">
+                  <span class="mini-steam mini-steam-one"></span>
+                  <span class="mini-steam mini-steam-two"></span>
+                  <span class="mini-cup-handle"></span>
+                  <span class="mini-cup-body">
+                    <canvas #goalCupCanvas class="mini-cup-chart" [attr.data-meta-id]="meta.id" [attr.data-progress]="meta.percentual"></canvas>
+                    <strong>{{ meta.percentual }}%</strong>
+                  </span>
+                </span>
 
-        <ng-template #semMetasEconomia>
-          <p class="empty-panel">Nenhuma meta criada ainda.</p>
-        </ng-template>
-      </article>
+                <span class="goal-copy">
+                  <strong>{{ meta.nome }}</strong>
+                  <span>{{ meta.valorAtual }} / {{ meta.valorMeta }}</span>
+                </span>
+              </div>
+              <span class="goal-progress"><b [style.width.%]="meta.percentual"></b></span>
+              <footer class="goal-footer">
+                <small>Meta conclu&iacute;da</small>
+                <span class="goal-actions">
+                  <button type="button" class="ghost-button" (click)="editarMetaEconomia(meta)">Editar</button>
+                  <button type="button" class="ghost-button danger-button" [disabled]="metaExcluindoId === meta.id" (click)="excluirMetaEconomia(meta)">
+                    {{ metaExcluindoId === meta.id ? 'Excluindo...' : 'Excluir' }}
+                  </button>
+                </span>
+              </footer>
+            </article>
+          </div>
 
-      <article class="panel history-panel">
-        <h2>&Uacute;ltimas economias</h2>
+          <ng-template #semMetasConcluidas>
+            <p class="empty-panel">As metas conclu&iacute;das v&atilde;o aparecer aqui.</p>
+          </ng-template>
+        </article>
 
-        <div class="history-list" *ngIf="historicoEconomias.length; else semHistoricoEconomia">
-          <p *ngFor="let economia of historicoEconomias">
-            <strong>{{ economia.valor }}</strong>
-            <span>{{ economia.metaNome }} - {{ economia.data }}</span>
-          </p>
-        </div>
+        <article class="panel history-panel">
+          <h2>&Uacute;ltimas economias</h2>
 
-        <ng-template #semHistoricoEconomia>
-          <p class="empty-panel">As economias guardadas v&atilde;o aparecer aqui.</p>
-        </ng-template>
-      </article>
+          <div class="history-list" *ngIf="historicoEconomias.length; else semHistoricoEconomia">
+            <p *ngFor="let economia of historicoEconomias">
+              <span class="history-info">
+                <strong>{{ economia.valor }}</strong>
+                <span>{{ economia.metaNome }} - {{ economia.data }}</span>
+              </span>
+              <span class="history-actions">
+                <button type="button" class="ghost-button" (click)="editarEconomia(economia)">Editar valor</button>
+                <button type="button" class="ghost-button danger-button" [disabled]="economiaExcluindoId === economia.id" (click)="excluirEconomia(economia)">
+                  {{ economiaExcluindoId === economia.id ? 'Excluindo...' : 'Excluir' }}
+                </button>
+              </span>
+            </p>
+          </div>
+
+          <ng-template #semHistoricoEconomia>
+            <p class="empty-panel">As economias guardadas v&atilde;o aparecer aqui.</p>
+          </ng-template>
+        </article>
+      </section>
     </section>
+  </section>
+
+  <section class="confirm-layer" *ngIf="metaParaExcluir as metaExclusao" role="dialog" aria-modal="true">
+    <article class="confirm-box">
+      <h2>Confirmar exclus&atilde;o</h2>
+      <p>
+        Tem certeza que deseja excluir a meta <strong>{{ metaExclusao.nome }}</strong>?
+        Ela sair&aacute; da lista de metas cadastradas.
+      </p>
+      <div class="confirm-actions">
+        <button type="button" class="ghost-button" [disabled]="metaExcluindoId === metaExclusao.id" (click)="cancelarExclusaoMeta()">Cancelar</button>
+        <button type="button" [disabled]="metaExcluindoId === metaExclusao.id" (click)="confirmarExclusaoMeta()">
+          {{ metaExcluindoId === metaExclusao.id ? 'Excluindo...' : 'Confirmar' }}
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <section class="confirm-layer" *ngIf="metaConcluidaNome" role="dialog" aria-modal="true">
+    <article class="confirm-box success-box">
+      <h2>Parab&eacute;ns!</h2>
+      <p>
+        Voc&ecirc; completou a meta <strong>{{ metaConcluidaNome }}</strong>.
+        Seu caf&eacute; financeiro acabou de ficar mais forte.
+      </p>
+      <button type="button" class="ghost-button" (click)="fecharMensagemMetaConcluida()">Cancelar</button>
+    </article>
+  </section>
+
+  <section class="confirm-layer" *ngIf="economiaParaExcluir as economiaExclusao" role="dialog" aria-modal="true">
+    <article class="confirm-box">
+      <h2>Confirmar exclus&atilde;o</h2>
+      <p>
+        Tem certeza que deseja excluir este registro de <strong>{{ economiaExclusao.valor }}</strong>?
+        Esse valor voltar&aacute; para o saldo da conta.
+      </p>
+      <div class="confirm-actions">
+        <button type="button" class="ghost-button" [disabled]="economiaExcluindoId === economiaExclusao.id" (click)="cancelarExclusaoEconomia()">Cancelar</button>
+        <button type="button" [disabled]="economiaExcluindoId === economiaExclusao.id" (click)="confirmarExclusaoEconomia()">
+          {{ economiaExcluindoId === economiaExclusao.id ? 'Excluindo...' : 'Confirmar' }}
+        </button>
+      </div>
+    </article>
   </section>
 </main>

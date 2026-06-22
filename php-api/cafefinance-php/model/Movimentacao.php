@@ -571,6 +571,31 @@ class Movimentacao
 
         $categoria = $stmt->fetch();
 
+        if ($categoria) {
+            return (int) $categoria['id'];
+        }
+
+        return $this->criarCategoriaUsuario($userId, $tipo, $categoriaNome);
+    }
+
+    private function criarCategoriaUsuario(int $userId, string $tipo, string $categoriaNome): ?int
+    {
+        $stmt = $this->connection->prepare(
+            "INSERT INTO categorias (user_id, nome, tipo, icone, cor)
+            VALUES (:user_id, :nome, :tipo, '...', '#8a7a68')
+            ON CONFLICT (user_id, nome, tipo) WHERE user_id IS NOT NULL
+            DO UPDATE SET nome = EXCLUDED.nome
+            RETURNING id"
+        );
+
+        $stmt->execute([
+            'user_id' => $userId,
+            'nome' => $categoriaNome,
+            'tipo' => $tipo,
+        ]);
+
+        $categoria = $stmt->fetch();
+
         return $categoria ? (int) $categoria['id'] : null;
     }
 
