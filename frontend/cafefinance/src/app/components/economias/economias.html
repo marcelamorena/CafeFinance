@@ -75,22 +75,9 @@
 
       <section class="hero">
         <div>
-          <p class="eyebrow">X&iacute;cara de economia</p>
+          <p class="eyebrow">Resumo de economia</p>
           <h2>{{ totalEconomizado }}</h2>
           <p>{{ textoResumoEconomia }}</p>
-        </div>
-
-        <div class="coffee-cup" aria-label="Progresso da meta de economia">
-          <span class="steam steam-one"></span>
-          <span class="steam steam-two"></span>
-          <span class="cup-saucer"></span>
-          <div class="cup-body">
-            <span class="cup-rim"></span>
-            <canvas #resumoCupCanvas class="cup-chart" [attr.data-progress]="progressoEconomia"></canvas>
-            <span class="cup-bean" aria-hidden="true"></span>
-            <strong>{{ progressoEconomia }}%</strong>
-            <small>{{ textoMetaXicara }}</small>
-          </div>
         </div>
       </section>
 

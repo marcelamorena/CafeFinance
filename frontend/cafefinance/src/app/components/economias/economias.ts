@@ -1,5 +1,5 @@
 import { NgFor, NgIf } from '@angular/common';
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, QueryList, ViewChildren, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import Chart from 'chart.js/auto';
 import type { ChartConfiguration } from 'chart.js';
@@ -40,9 +40,7 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly cdr = inject(ChangeDetectorRef);
-  @ViewChild('resumoCupCanvas') private resumoCupCanvas?: ElementRef<HTMLCanvasElement>;
   @ViewChildren('goalCupCanvas') private goalCupCanvases?: QueryList<ElementRef<HTMLCanvasElement>>;
-  private graficoXicaraResumo?: Chart<'bar'>;
   private graficosXicarasMetas = new Map<number, Chart<'bar'>>();
   private canvasMetasSubscription?: Subscription;
   private viewPronta = false;
@@ -76,8 +74,6 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
   carregandoResumoEconomias = true;
 
   totalEconomizado = 'R$ 0,00';
-  progressoEconomia = 0;
-  textoMetaXicara = 'Sem meta';
   textoResumoEconomia = 'Crie uma meta para acompanhar o progresso das suas economias.';
   metasEconomia: MetaEconomiaTela[] = [];
   historicoEconomias: EconomiaTela[] = [];
@@ -95,7 +91,6 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.canvasMetasSubscription?.unsubscribe();
-    this.graficoXicaraResumo?.destroy();
     this.graficosXicarasMetas.forEach((grafico) => grafico.destroy());
   }
 
@@ -576,15 +571,11 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
 
   private aplicarMetaPrincipal(meta: MetaEconomia | null): void {
     if (!meta) {
-      this.progressoEconomia = 0;
-      this.textoMetaXicara = 'Sem meta';
       this.textoResumoEconomia = 'Crie uma meta para acompanhar o progresso das suas economias.';
       this.agendarRenderizacaoGraficosXicaras();
       return;
     }
 
-    this.progressoEconomia = Math.max(0, Math.min(100, Math.round(meta.percentual)));
-    this.textoMetaXicara = meta.nome;
     this.textoResumoEconomia = `${this.formatarReal(meta.valor_atual)} guardados de ${this.formatarReal(meta.valor_meta)}.`;
     this.agendarRenderizacaoGraficosXicaras();
   }
@@ -677,8 +668,6 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    this.progressoEconomia = meta.percentual;
-    this.textoMetaXicara = meta.nome;
     this.textoResumoEconomia = `${meta.valorAtual} guardados de ${meta.valorMeta}.`;
     this.agendarRenderizacaoGraficosXicaras();
   }
@@ -700,14 +689,6 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private renderizarGraficosXicaras(): void {
-    if (this.resumoCupCanvas?.nativeElement) {
-      this.graficoXicaraResumo = this.criarOuAtualizarGraficoXicara(
-        this.resumoCupCanvas.nativeElement,
-        this.progressoEconomia,
-        this.graficoXicaraResumo,
-      );
-    }
-
     const metasRenderizadas = new Set<number>();
 
     this.goalCupCanvases?.forEach((canvasRef) => {

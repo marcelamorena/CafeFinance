@@ -519,8 +519,7 @@ button:disabled {
   background: #2a1208;
 }
 
-.mini-cup-chart,
-.cup-chart {
+.mini-cup-chart {
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -652,135 +651,6 @@ button:disabled {
   flex: 0 0 auto;
 }
 
-.coffee-cup {
-  width: 236px;
-  height: 190px;
-  position: relative;
-  flex: 0 0 236px;
-}
-
-.coffee-cup::before {
-  content: "";
-  position: absolute;
-  right: 24px;
-  top: 89px;
-  width: 48px;
-  height: 48px;
-  border: 10px solid #2a1208;
-  border-left: 0;
-  border-radius: 0 42px 42px 0;
-  z-index: 1;
-}
-
-.cup-saucer {
-  position: absolute;
-  left: 42px;
-  bottom: 13px;
-  width: 140px;
-  height: 30px;
-  border-bottom: 10px solid #2a1208;
-  border-radius: 0 0 85px 85px;
-  transform: rotate(-3deg);
-  z-index: 0;
-}
-
-.steam {
-  position: absolute;
-  top: 0;
-  width: 20px;
-  height: 50px;
-  border-left: 9px solid #2a1208;
-  border-radius: 50%;
-  z-index: 3;
-}
-
-.steam-one {
-  left: 82px;
-  transform: rotate(15deg);
-}
-
-.steam-two {
-  left: 116px;
-  top: 13px;
-  height: 42px;
-  border-left-width: 8px;
-  transform: rotate(16deg);
-}
-
-.cup-body {
-  position: absolute;
-  left: 42px;
-  bottom: 30px;
-  width: 132px;
-  height: 86px;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  border: 9px solid #2a1208;
-  border-top-width: 8px;
-  border-radius: 10px 10px 62px 62px / 8px 8px 76px 76px;
-  background: #f7e5c7;
-  z-index: 2;
-}
-
-.cup-rim {
-  position: absolute;
-  top: 4px;
-  left: 13px;
-  right: 13px;
-  height: 20px;
-  border: 6px solid #2a1208;
-  border-radius: 50%;
-  background: #fff4df;
-  z-index: 4;
-  pointer-events: none;
-}
-
-.cup-body .cup-chart {
-  inset: 24px 0 0;
-  height: calc(100% - 24px) !important;
-}
-
-.cup-bean {
-  position: absolute;
-  left: 48px;
-  bottom: 19px;
-  width: 22px;
-  height: 34px;
-  border: 6px solid #2a1208;
-  border-radius: 50%;
-  transform: rotate(34deg);
-  z-index: 4;
-  pointer-events: none;
-}
-
-.cup-bean::before {
-  content: "";
-  position: absolute;
-  inset: 4px 8px;
-  border-left: 3px solid #2a1208;
-  border-radius: 50%;
-}
-
-.cup-body strong,
-.cup-body small {
-  position: relative;
-  z-index: 6;
-  color: #2a1208;
-  text-align: center;
-  text-shadow: 0 1px #f1dcc0;
-}
-
-.cup-body strong {
-  font-size: 1.2rem;
-}
-
-.cup-body small {
-  max-width: 112px;
-  font-size: 0.72rem;
-  font-weight: 900;
-}
-
 .confirm-layer {
   position: fixed;
   inset: 0;
@@ -888,7 +758,4 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
-  .coffee-cup {
-    justify-self: center;
-  }
 }

@@ -46,7 +46,7 @@ export class Login {
           }
 
           this.loginForm.reset();
-          this.router.navigate(['/home']);
+          this.router.navigate(['/perfil']);
         }
       },
       error: (erro) => {
