@@ -57,7 +57,7 @@ export class Cadastro {
       },
       error: (erro) => {
         this.carregando = false;
-        this.mensagem = erro.error?.message ?? 'Nao foi possivel cadastrar.';
+        this.mensagem = erro.error?.message ?? 'Não foi possível cadastrar.';
       },
     });
   }

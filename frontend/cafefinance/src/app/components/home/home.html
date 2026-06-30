@@ -138,13 +138,13 @@
                   Parcelas
                   <input
                     type="number"
-                    min="2"
+                    min="1"
                     max="60"
                     [value]="quantidadeParcelas"
                     (input)="atualizarQuantidadeParcelas($event)"
                   />
                 </label>
-                <p *ngIf="valorParcelaEstimado">Aprox. {{ valorParcelaEstimado }} por m&ecirc;s</p>
+                <p *ngIf="valorParcelaEstimado">{{ textoValorParcelaEstimado }}</p>
               </div>
             </div>
 

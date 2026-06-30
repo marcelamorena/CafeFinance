@@ -298,13 +298,22 @@ input::placeholder {
 .feedback-message {
   margin: 0;
   padding: 9px 12px;
-  border: 1px solid #c97b52;
   border-radius: 8px;
-  background: #fff0e8;
-  color: #7e3418;
   font-size: 0.95rem;
   font-weight: 900;
   text-align: center;
+}
+
+.feedback-message.error-message {
+  border: 1px solid #c97b52;
+  background: #fff0e8;
+  color: #7e3418;
+}
+
+.feedback-message.success-message {
+  border: 1px solid #5e8f59;
+  background: #edf8ea;
+  color: #27622d;
 }
 
 @media (max-height: 760px) and (min-width: 901px) {

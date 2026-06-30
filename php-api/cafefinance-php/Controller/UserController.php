@@ -20,7 +20,7 @@ class UserController
         if (!is_array($body)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'JSON invalido.'
+                'message' => 'JSON inválido.'
             ]);
         }
 
@@ -40,7 +40,7 @@ class UserController
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'E-mail invalido.'
+                'message' => 'E-mail inválido.'
             ]);
         }
 
@@ -52,11 +52,11 @@ class UserController
         }
 
         try {
-            // Regra de negocio: nao permite cadastrar o mesmo email duas vezes.
+            // Regra de negócio: não permite cadastrar o mesmo email duas vezes.
             if ($this->userModel->findByEmail($email)) {
                 $this->respond(409, [
                     'success' => false,
-                    'message' => 'Este e-mail ja esta cadastrado.'
+                    'message' => 'Este e-mail já está cadastrado.'
                 ]);
             }
 
@@ -66,13 +66,13 @@ class UserController
 
             $this->respond(201, [
                 'success' => true,
-                'message' => 'Usuario cadastrado com sucesso.',
+                'message' => 'Usuário cadastrado com sucesso.',
                 'user' => $user
             ]);
         } catch (Throwable $erro) {
             $this->respond(500, [
                 'success' => false,
-                'message' => 'Erro ao cadastrar usuario.'
+                'message' => 'Erro ao cadastrar usuário.'
             ]);
         }
     }
@@ -84,7 +84,7 @@ class UserController
         if (!is_array($body)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'JSON invalido.'
+                'message' => 'JSON inválido.'
             ]);
         }
 
@@ -101,7 +101,7 @@ class UserController
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'E-mail invalido.'
+                'message' => 'E-mail inválido.'
             ]);
         }
 
@@ -111,7 +111,7 @@ class UserController
             if (!$user || !password_verify($password, $user['password_hash'] ?? '')) {
                 $this->respond(401, [
                     'success' => false,
-                    'message' => 'E-mail ou senha invalidos.'
+                    'message' => 'E-mail ou senha inválidos.'
                 ]);
             }
 
@@ -141,13 +141,13 @@ class UserController
         if (!$user) {
             $this->respond(404, [
                 'success' => false,
-                'message' => 'Usuario nao encontrado.'
+                    'message' => 'Usuário não encontrado.'
             ]);
         }
 
         $this->respond(200, [
             'success' => true,
-            'message' => 'Usuario autenticado.',
+            'message' => 'Usuário autenticado.',
             'user' => $user,
             'session' => [
                 'id' => session_id(),
@@ -186,7 +186,7 @@ class UserController
         if (!isset($_SESSION['user_id'])) {
             $this->respond(401, [
                 'success' => false,
-                'message' => 'Usuario nao autenticado.'
+                'message' => 'Usuário não autenticado.'
             ]);
         }
 

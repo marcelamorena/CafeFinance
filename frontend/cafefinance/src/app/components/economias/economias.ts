@@ -15,6 +15,7 @@ interface MetaEconomiaTela {
   valorMeta: string;
   valorAtual: string;
   percentual: number;
+  percentualTexto: string;
   dataLimite?: string | null;
   status: string;
 }
@@ -210,7 +211,7 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
     const valorAtualNumero = this.converterValorCampoParaNumero(this.valorAtualMetaEconomia || '0,00');
 
     if (this.metaEditandoId && valorAtualNumero > valorMetaNumero) {
-      this.exibirMensagemEconomia('O valor guardado nao pode passar do valor delimitado na meta.', true);
+      this.exibirMensagemEconomia('O valor guardado não pode passar do valor delimitado na meta.', true);
       return;
     }
 
@@ -250,7 +251,7 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (erro) => {
         this.criandoMetaEconomia = false;
-        this.exibirMensagemEconomia(erro.error?.message ?? 'Nao foi possivel salvar a meta.', true);
+        this.exibirMensagemEconomia(erro.error?.message ?? 'Não foi possível salvar a meta.', true);
         this.atualizarTela();
       },
     });
@@ -307,7 +308,7 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
           this.metaEconomiaSelecionadaId = null;
         }
 
-        this.exibirMensagemEconomia(resposta.message || 'Meta excluida com sucesso.', false);
+        this.exibirMensagemEconomia(resposta.message || 'Meta excluída com sucesso.', false);
 
         if (resposta.dashboard) {
           this.aplicarDashboardEconomias(resposta.dashboard);
@@ -321,7 +322,7 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
       error: (erro) => {
         this.metaExcluindoId = null;
         this.metaParaExcluir = null;
-        this.exibirMensagemEconomia(erro.error?.message ?? 'Nao foi possivel excluir a meta.', true);
+        this.exibirMensagemEconomia(erro.error?.message ?? 'Não foi possível excluir a meta.', true);
         this.atualizarTela();
       },
     });
@@ -357,7 +358,7 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
 
     if (metaDestino && totalSemEconomiaAtual + valorEconomiaNumero > metaDestino.valorMetaNumero) {
       this.carregandoEconomia = false;
-      this.exibirMensagemEconomia('Nao da para guardar mais do que o valor delimitado na meta.', true);
+      this.exibirMensagemEconomia('Não dá para guardar mais do que o valor delimitado na meta.', true);
       return;
     }
 
@@ -404,7 +405,7 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
         },
         error: (erro) => {
           this.carregandoEconomia = false;
-          this.exibirMensagemEconomia(erro.error?.message ?? 'Nao foi possivel guardar a economia.', true);
+          this.exibirMensagemEconomia(erro.error?.message ?? 'Não foi possível guardar a economia.', true);
           this.atualizarTela();
         },
       });
@@ -461,7 +462,7 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
           this.limparFormularioEconomia();
         }
 
-        this.exibirMensagemEconomia(resposta.message || 'Registro excluido com sucesso.', false);
+        this.exibirMensagemEconomia(resposta.message || 'Registro excluído com sucesso.', false);
 
         if (resposta.dashboard) {
           this.aplicarDashboardEconomias(resposta.dashboard);
@@ -476,7 +477,7 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
       error: (erro) => {
         this.economiaExcluindoId = null;
         this.economiaParaExcluir = null;
-        this.exibirMensagemEconomia(erro.error?.message ?? 'Nao foi possivel excluir o registro.', true);
+        this.exibirMensagemEconomia(erro.error?.message ?? 'Não foi possível excluir o registro.', true);
         this.atualizarTela();
       },
     });
@@ -715,7 +716,7 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private criarOuAtualizarGraficoXicara(canvas: HTMLCanvasElement, percentual: number, grafico?: Chart<'bar'>): Chart<'bar'> {
-    const progresso = Math.max(0, Math.min(100, Math.round(percentual)));
+    const progresso = Math.max(0, Math.min(100, percentual));
     const preenchimento = this.criarGradienteCafe(canvas, progresso);
 
     if (grafico) {
@@ -909,6 +910,8 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private formatarMetaEconomiaTela(meta: MetaEconomia): MetaEconomiaTela {
+    const percentual = this.normalizarPercentual(meta.percentual);
+
     return {
       id: meta.id,
       nome: meta.nome,
@@ -916,10 +919,22 @@ export class Economias implements OnInit, AfterViewInit, OnDestroy {
       valorAtualNumero: meta.valor_atual,
       valorMeta: this.formatarReal(meta.valor_meta),
       valorAtual: this.formatarReal(meta.valor_atual),
-      percentual: Math.max(0, Math.min(100, Math.round(meta.percentual))),
+      percentual,
+      percentualTexto: this.formatarPercentual(percentual),
       dataLimite: meta.data_limite,
       status: meta.status,
     };
+  }
+
+  private normalizarPercentual(percentual: number): number {
+    return Math.max(0, Math.min(100, Number(percentual.toFixed(1))));
+  }
+
+  private formatarPercentual(percentual: number): string {
+    return percentual.toLocaleString('pt-BR', {
+      minimumFractionDigits: Number.isInteger(percentual) ? 0 : 1,
+      maximumFractionDigits: 1,
+    });
   }
 
   private formatarEconomiaTela(economia: EconomiaItem): EconomiaTela {

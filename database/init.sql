@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS parcelamentos (
     descricao TEXT,
     valor_total NUMERIC(12, 2) NOT NULL CHECK (valor_total > 0),
     valor_parcela NUMERIC(12, 2) NOT NULL CHECK (valor_parcela > 0),
-    quantidade_parcelas INTEGER NOT NULL CHECK (quantidade_parcelas BETWEEN 2 AND 60),
+    quantidade_parcelas INTEGER NOT NULL CHECK (quantidade_parcelas BETWEEN 1 AND 60),
     data_primeira_parcela DATE NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'ativo' CHECK (status IN ('ativo', 'quitado', 'cancelado')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

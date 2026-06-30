@@ -170,13 +170,13 @@
           <div class="goals-list" *ngIf="metasAtivas.length; else semMetasEconomia">
             <article class="goal-card" *ngFor="let meta of metasAtivas">
               <div class="goal-card-main">
-                <span class="mini-cup" [attr.aria-label]="meta.percentual + '% conclu&iacute;do'">
+                <span class="mini-cup" [attr.aria-label]="meta.percentualTexto + '% conclu&iacute;do'">
                   <span class="mini-steam mini-steam-one"></span>
                   <span class="mini-steam mini-steam-two"></span>
                   <span class="mini-cup-handle"></span>
                   <span class="mini-cup-body">
                     <canvas #goalCupCanvas class="mini-cup-chart" [attr.data-meta-id]="meta.id" [attr.data-progress]="meta.percentual"></canvas>
-                    <strong>{{ meta.percentual }}%</strong>
+                    <strong>{{ meta.percentualTexto }}%</strong>
                   </span>
                 </span>
 
@@ -187,7 +187,7 @@
               </div>
               <span class="goal-progress"><b [style.width.%]="meta.percentual"></b></span>
               <footer class="goal-footer">
-                <small>{{ meta.percentual }}% conclu&iacute;do</small>
+                <small>{{ meta.percentualTexto }}% conclu&iacute;do</small>
                 <span class="goal-actions">
                   <button type="button" class="ghost-button" (click)="editarMetaEconomia(meta)">Editar</button>
                   <button type="button" class="ghost-button danger-button" [disabled]="metaExcluindoId === meta.id" (click)="excluirMetaEconomia(meta)">
@@ -238,7 +238,7 @@
                   <span class="mini-cup-handle"></span>
                   <span class="mini-cup-body">
                     <canvas #goalCupCanvas class="mini-cup-chart" [attr.data-meta-id]="meta.id" [attr.data-progress]="meta.percentual"></canvas>
-                    <strong>{{ meta.percentual }}%</strong>
+                    <strong>{{ meta.percentualTexto }}%</strong>
                   </span>
                 </span>
 

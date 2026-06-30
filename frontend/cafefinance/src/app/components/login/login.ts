@@ -13,6 +13,7 @@ import { AuthService, LoginRequest } from '../../services/auth.service';
 })
 export class Login {
   mensagem = '';
+  mensagemTipo: 'sucesso' | 'erro' = 'erro';
   carregando = false;
 
   loginForm = new FormGroup({
@@ -25,11 +26,13 @@ export class Login {
 
   entrar() {
     this.mensagem = '';
+    this.mensagemTipo = 'erro';
 
     const dados = this.loginForm.getRawValue() as LoginRequest;
 
     if (!dados.email || !dados.password) {
       this.mensagem = 'Preencha todos os campos.';
+      this.mensagemTipo = 'erro';
       return;
     }
 
@@ -41,6 +44,8 @@ export class Login {
         this.mensagem = resposta.message;
 
         if (resposta.success) {
+          this.mensagemTipo = 'sucesso';
+
           if (resposta.user) {
             localStorage.setItem('cafefinance_usuario', JSON.stringify(resposta.user));
           }
@@ -51,7 +56,8 @@ export class Login {
       },
       error: (erro) => {
         this.carregando = false;
-        this.mensagem = erro.status === 401 ? 'E-mail ou senha incorretos.' : erro.error?.message ?? 'Nao foi possivel entrar.';
+        this.mensagemTipo = 'erro';
+        this.mensagem = erro.status === 401 ? 'E-mail ou senha incorretos.' : erro.error?.message ?? 'Não foi possível entrar.';
       },
     });
   }

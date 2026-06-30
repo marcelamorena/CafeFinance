@@ -39,7 +39,7 @@ class EconomiaController
         if (!is_array($body)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'JSON invalido.',
+                'message' => 'JSON inválido.',
             ]);
         }
 
@@ -64,7 +64,7 @@ class EconomiaController
         if ($dataLimite !== '' && !$this->dataValida($dataLimite)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'Informe uma data valida.',
+                'message' => 'Informe uma data válida.',
             ]);
         }
 
@@ -72,7 +72,7 @@ class EconomiaController
             if ($this->economiaModel->nomeMetaExiste($userId, $nome)) {
                 $this->respond(409, [
                     'success' => false,
-                    'message' => 'Ja existe uma meta com esse nome.',
+                    'message' => 'Já existe uma meta com esse nome.',
                 ]);
             }
 
@@ -99,7 +99,7 @@ class EconomiaController
         if (!is_array($body)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'JSON invalido.',
+                'message' => 'JSON inválido.',
             ]);
         }
 
@@ -125,14 +125,14 @@ class EconomiaController
         if (!$this->dataValida($dataEconomia)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'Informe uma data valida.',
+                'message' => 'Informe uma data válida.',
             ]);
         }
 
         if ($descricao !== '' && $this->contarPalavras($descricao) > self::LIMITE_PALAVRAS_DESCRICAO) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'A descricao deve ter no maximo 12 palavras.',
+                'message' => 'A descrição deve ter no máximo 12 palavras.',
             ]);
         }
 
@@ -148,7 +148,7 @@ class EconomiaController
             if (!$resultado) {
                 $this->respond(404, [
                     'success' => false,
-                    'message' => 'Meta nao encontrada.',
+                    'message' => 'Meta não encontrada.',
                 ]);
             }
 
@@ -180,7 +180,7 @@ class EconomiaController
         if (!is_array($body)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'JSON invalido.',
+                'message' => 'JSON inválido.',
             ]);
         }
 
@@ -206,14 +206,14 @@ class EconomiaController
         if (!$this->dataValida($dataEconomia)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'Informe uma data valida.',
+                'message' => 'Informe uma data válida.',
             ]);
         }
 
         if ($descricao !== '' && $this->contarPalavras($descricao) > self::LIMITE_PALAVRAS_DESCRICAO) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'A descricao deve ter no maximo 12 palavras.',
+                'message' => 'A descrição deve ter no máximo 12 palavras.',
             ]);
         }
 
@@ -230,7 +230,7 @@ class EconomiaController
             if (!$resultado) {
                 $this->respond(404, [
                     'success' => false,
-                    'message' => 'Economia nao encontrada.',
+                    'message' => 'Economia não encontrada.',
                 ]);
             }
 
@@ -262,7 +262,7 @@ class EconomiaController
         if (!is_array($body)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'JSON invalido.',
+                'message' => 'JSON inválido.',
             ]);
         }
 
@@ -288,21 +288,21 @@ class EconomiaController
         if ($valorAtual !== null && $valorAtual < 0) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'Informe um valor guardado valido.',
+                'message' => 'Informe um valor guardado válido.',
             ]);
         }
 
         if ($valorAtual !== null && $valorAtual > $valorMeta) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'O valor guardado nao pode passar do valor delimitado na meta.',
+                'message' => 'O valor guardado não pode passar do valor delimitado na meta.',
             ]);
         }
 
         if ($dataLimite !== '' && !$this->dataValida($dataLimite)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'Informe uma data valida.',
+                'message' => 'Informe uma data válida.',
             ]);
         }
 
@@ -310,7 +310,7 @@ class EconomiaController
             if ($this->economiaModel->nomeMetaExiste($userId, $nome, $id)) {
                 $this->respond(409, [
                     'success' => false,
-                    'message' => 'Ja existe uma meta com esse nome.',
+                    'message' => 'Já existe uma meta com esse nome.',
                 ]);
             }
 
@@ -326,7 +326,7 @@ class EconomiaController
             if (!$meta) {
                 $this->respond(404, [
                     'success' => false,
-                    'message' => 'Meta nao encontrada.',
+                    'message' => 'Meta não encontrada.',
                 ]);
             }
 
@@ -359,13 +359,13 @@ class EconomiaController
             if (!$excluida) {
                 $this->respond(404, [
                     'success' => false,
-                    'message' => 'Meta nao encontrada.',
+                    'message' => 'Meta não encontrada.',
                 ]);
             }
 
             $this->respond(200, [
                 'success' => true,
-                'message' => 'Meta excluida com sucesso.',
+                'message' => 'Meta excluída com sucesso.',
                 'id' => $id,
                 'dashboard' => $this->economiaModel->resumo($userId),
             ]);
@@ -387,13 +387,13 @@ class EconomiaController
             if (!$resultado) {
                 $this->respond(404, [
                     'success' => false,
-                    'message' => 'Registro de economia nao encontrado.',
+                    'message' => 'Registro de economia não encontrado.',
                 ]);
             }
 
             $this->respond(200, [
                 'success' => true,
-                'message' => 'Registro excluido e valor devolvido ao saldo.',
+                'message' => 'Registro excluído e valor devolvido ao saldo.',
                 'id' => $resultado['id'],
                 'meta' => $resultado['meta'],
                 'total_economizado' => $resultado['total_economizado'],
@@ -461,7 +461,7 @@ class EconomiaController
         if (!isset($_SESSION['user_id'])) {
             $this->respond(401, [
                 'success' => false,
-                'message' => 'Usuario nao autenticado.',
+                'message' => 'Usuário não autenticado.',
             ]);
         }
 

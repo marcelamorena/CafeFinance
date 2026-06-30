@@ -20,7 +20,7 @@ class MovimentacaoController
         try {
             $this->respond(200, [
                 'success' => true,
-                'message' => 'Movimentacoes carregadas com sucesso.',
+                'message' => 'Movimentações carregadas com sucesso.',
                 'movimentacoes' => $this->movimentacaoModel->listarPorUsuario($userId)
             ]);
         } catch (Throwable $erro) {
@@ -39,7 +39,7 @@ class MovimentacaoController
         if (!is_array($body)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'JSON invalido.'
+                'message' => 'JSON inválido.'
             ]);
         }
 
@@ -54,7 +54,7 @@ class MovimentacaoController
         if (!in_array($tipo, ['entrada', 'saida'], true)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'Tipo de movimentacao invalido.'
+                'message' => 'Tipo de movimentação inválido.'
             ]);
         }
 
@@ -68,7 +68,7 @@ class MovimentacaoController
         if (!$this->dataValida($dataMovimentacao)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'Informe uma data valida.'
+                'message' => 'Informe uma data válida.'
             ]);
         }
 
@@ -82,21 +82,21 @@ class MovimentacaoController
         if ($descricao !== '' && $this->contarPalavras($descricao) > self::LIMITE_PALAVRAS_DESCRICAO) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'A descricao deve ter no maximo 12 palavras.'
+                'message' => 'A descrição deve ter no máximo 12 palavras.'
             ]);
         }
 
         if ($parcelado && $tipo !== 'saida') {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'Parcelamento esta disponivel apenas para saidas.'
+                'message' => 'Parcelamento está disponível apenas para saídas.'
             ]);
         }
 
-        if ($parcelado && ($quantidadeParcelas < 2 || $quantidadeParcelas > 60)) {
+        if ($parcelado && ($quantidadeParcelas < 1 || $quantidadeParcelas > 60)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'Informe uma quantidade de parcelas entre 2 e 60.'
+                'message' => 'Informe uma quantidade de parcelas entre 1 e 60.'
             ]);
         }
 
@@ -111,9 +111,11 @@ class MovimentacaoController
                     $quantidadeParcelas
                 );
 
+                $textoParcelas = $quantidadeParcelas === 1 ? '1 parcela' : "{$quantidadeParcelas} parcelas";
+
                 $this->respond(201, [
                     'success' => true,
-                    'message' => "Compra parcelada salva em {$quantidadeParcelas} parcelas.",
+                    'message' => "Compra parcelada salva em {$textoParcelas}.",
                     'parcelamento' => $parcelamento['parcelamento'],
                     'movimentacoes' => $parcelamento['movimentacoes']
                 ]);
@@ -149,7 +151,7 @@ class MovimentacaoController
         if (!is_array($body)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'JSON invalido.'
+                'message' => 'JSON inválido.'
             ]);
         }
 
@@ -163,7 +165,7 @@ class MovimentacaoController
         if (!in_array($tipo, ['entrada', 'saida'], true)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'Tipo de movimentacao invalido.'
+                'message' => 'Tipo de movimentação inválido.'
             ]);
         }
 
@@ -177,7 +179,7 @@ class MovimentacaoController
         if (!$this->dataValida($dataMovimentacao)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'Informe uma data valida.'
+                'message' => 'Informe uma data válida.'
             ]);
         }
 
@@ -191,14 +193,14 @@ class MovimentacaoController
         if ($descricao !== '' && $this->contarPalavras($descricao) > self::LIMITE_PALAVRAS_DESCRICAO) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'A descricao deve ter no maximo 12 palavras.'
+                'message' => 'A descrição deve ter no máximo 12 palavras.'
             ]);
         }
 
-        if ($quantidadeParcelas !== null && ($quantidadeParcelas < 2 || $quantidadeParcelas > 60)) {
+        if ($quantidadeParcelas !== null && ($quantidadeParcelas < 1 || $quantidadeParcelas > 60)) {
             $this->respond(400, [
                 'success' => false,
-                'message' => 'Informe uma quantidade de parcelas entre 2 e 60.'
+                'message' => 'Informe uma quantidade de parcelas entre 1 e 60.'
             ]);
         }
 
@@ -217,7 +219,7 @@ class MovimentacaoController
             if (!$movimentacao) {
                 $this->respond(404, [
                     'success' => false,
-                    'message' => 'Registro nao encontrado.'
+                    'message' => 'Registro não encontrado.'
                 ]);
             }
 
@@ -244,13 +246,13 @@ class MovimentacaoController
             if (!$resultado) {
                 $this->respond(404, [
                     'success' => false,
-                    'message' => 'Registro nao encontrado.'
+                    'message' => 'Registro não encontrado.'
                 ]);
             }
 
             $mensagem = $resultado['parcelamento']
-                ? 'Compra parcelada excluida com sucesso.'
-                : 'Registro excluido com sucesso.';
+                ? 'Compra parcelada excluída com sucesso.'
+                : 'Registro excluído com sucesso.';
 
             $this->respond(200, [
                 'success' => true,
@@ -337,7 +339,7 @@ class MovimentacaoController
         if (!isset($_SESSION['user_id'])) {
             $this->respond(401, [
                 'success' => false,
-                'message' => 'Usuario nao autenticado.'
+                'message' => 'Usuário não autenticado.'
             ]);
         }
 

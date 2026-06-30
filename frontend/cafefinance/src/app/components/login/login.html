@@ -36,7 +36,15 @@
           </div>
         </label>
 
-        <p class="feedback-message" role="alert" *ngIf="mensagem">{{ mensagem }}</p>
+        <p
+          class="feedback-message"
+          [class.success-message]="mensagemTipo === 'sucesso'"
+          [class.error-message]="mensagemTipo === 'erro'"
+          role="alert"
+          *ngIf="mensagem"
+        >
+          {{ mensagem }}
+        </p>
 
         <div class="form-options">
           <label class="remember-option">

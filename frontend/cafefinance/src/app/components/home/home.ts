@@ -95,7 +95,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   descricaoRegistro = '';
   descricaoPalavras = 0;
   compraParcelada = false;
-  quantidadeParcelas = 2;
+  quantidadeParcelas = 1;
   registroEditandoId: number | null = null;
   registroEditandoParcela = '';
   registroEditandoParcelamento = false;
@@ -123,7 +123,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   saldoNegativo = false;
   progressoEconomia = 0;
   textoMetaXicara = 'Sem meta';
-  textoResumoEconomia = 'Crie uma meta de economia para acompanhar seu progresso na xicara.';
+  textoResumoEconomia = 'Crie uma meta de economia para acompanhar seu progresso na xícara.';
 
   registrosRecentes: RegistroRecente[] = [];
   gastosPorCategoria: GastoCategoria[] = [];
@@ -263,6 +263,10 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (this.tipoMovimentacao === 'saida' && this.compraParcelada) {
+      if (this.quantidadeParcelas === 1) {
+        return 'A compra será registrada como fatura 1/1 no próximo mês.';
+      }
+
       return 'A compra será dividida automaticamente nos próximos meses.';
     }
 
@@ -285,6 +289,16 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     return this.formatarReal(valorTotal / this.quantidadeParcelas);
   }
 
+  get textoValorParcelaEstimado(): string {
+    if (!this.valorParcelaEstimado) {
+      return '';
+    }
+
+    return this.quantidadeParcelas === 1
+      ? `Fatura 1/1 de ${this.valorParcelaEstimado} no próximo mês`
+      : `Aprox. ${this.valorParcelaEstimado} por mês`;
+  }
+
   selecionarTipo(tipo: TipoMovimentacao): void {
     if (this.registroEditandoParcelamento && tipo === 'entrada') {
       this.exibirMensagemRegistro('Parcelas continuam como saída. Edite valor, data, categoria ou descrição.', true);
@@ -297,7 +311,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
     if (tipo === 'entrada') {
       this.compraParcelada = false;
-      this.quantidadeParcelas = 2;
+      this.quantidadeParcelas = 1;
     }
 
     this.limparMensagemRegistro();
@@ -357,12 +371,15 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   atualizarCompraParcelada(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.compraParcelada = this.tipoMovimentacao === 'saida' && input.checked;
+    if (this.compraParcelada && this.quantidadeParcelas < 1) {
+      this.quantidadeParcelas = 1;
+    }
     this.limparMensagemRegistro();
   }
 
   atualizarQuantidadeParcelas(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const quantidade = Math.min(60, Math.max(2, Number(input.value) || 2));
+    const quantidade = Math.min(60, Math.max(1, Number(input.value) || 1));
 
     this.quantidadeParcelas = quantidade;
     input.value = String(quantidade);
@@ -376,7 +393,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.tipoMovimentacao = registro.tipo;
     this.mostrarCategoriasExtrasSaida = false;
     this.categoriaSelecionada = registro.categoria;
-    this.quantidadeParcelas = registro.totalParcelas ?? 2;
+    this.quantidadeParcelas = registro.totalParcelas ?? 1;
     this.valorRegistro = this.formatarMoeda(
       String(Math.round(registro.valorNumero * (this.registroEditandoParcelamento ? this.quantidadeParcelas : 1) * 100)),
     );
@@ -399,7 +416,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.descricaoPalavras = 0;
     this.dataRegistro = this.hoje;
     this.compraParcelada = false;
-    this.quantidadeParcelas = 2;
+    this.quantidadeParcelas = 1;
     this.tipoMovimentacao = 'entrada';
     this.categoriaSelecionada = this.categoriasEntrada[0].nome;
     if (limparMensagem) {
@@ -478,7 +495,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
       .salvarMovimentacao({
         tipo: this.tipoMovimentacao,
         valor: this.valorRegistro,
-        data_movimentacao: this.dataRegistro,
+        data_movimentacao: this.dataMovimentacaoParaSalvar(),
         categoria: this.categoriaSelecionada,
         descricao: this.descricaoRegistro.trim(),
         parcelado: this.tipoMovimentacao === 'saida' && this.compraParcelada,
@@ -492,7 +509,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
           this.descricaoRegistro = '';
           this.descricaoPalavras = 0;
           this.compraParcelada = false;
-          this.quantidadeParcelas = 2;
+          this.quantidadeParcelas = 1;
           this.dataRegistro = this.hoje;
           this.atualizarTela();
           this.carregarResumo();
@@ -941,6 +958,25 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate(['/']);
   }
 
+  private dataMovimentacaoParaSalvar(): string {
+    if (this.tipoMovimentacao === 'saida' && this.compraParcelada && this.quantidadeParcelas === 1) {
+      return this.adicionarMesesData(this.dataRegistro, 1);
+    }
+
+    return this.dataRegistro;
+  }
+
+  private adicionarMesesData(dataIso: string, mesesAdicionar: number): string {
+    const [ano, mes, dia] = dataIso.split('-').map(Number);
+    const data = new Date(ano, mes - 1 + mesesAdicionar, dia);
+
+    if (data.getDate() !== dia) {
+      data.setDate(0);
+    }
+
+    return this.formatarData(data);
+  }
+
   private formatarData(data: Date): string {
     const ano = data.getFullYear();
     const mes = String(data.getMonth() + 1).padStart(2, '0');
@@ -1016,7 +1052,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
     if (!meta) {
       this.progressoEconomia = 0;
       this.textoMetaXicara = 'Sem meta';
-      this.textoResumoEconomia = 'Crie uma meta de economia para acompanhar seu progresso na xicara.';
+      this.textoResumoEconomia = 'Crie uma meta de economia para acompanhar seu progresso na xícara.';
       return;
     }
 

@@ -73,7 +73,7 @@ class Economia
         $valorAtualFinal = $valorAtualDesejado ?? $this->totalEconomizadoNaMeta($id);
 
         if ($this->valorPassaDoLimiteDaMeta($valorAtualFinal, $valorMeta)) {
-            throw new DomainException('O valor guardado nao pode passar do valor delimitado na meta.');
+            throw new DomainException('O valor guardado não pode passar do valor delimitado na meta.');
         }
 
         try {
@@ -187,7 +187,7 @@ class Economia
         $totalProjetado = $this->totalEconomizadoNaMeta($metaId) + $valor;
 
         if ($this->valorPassaDoLimiteDaMeta($totalProjetado, (float) $meta['valor_meta'])) {
-            throw new DomainException('Nao e possivel guardar mais dinheiro do que o valor delimitado na meta.');
+            throw new DomainException('Não é possível guardar mais dinheiro do que o valor delimitado na meta.');
         }
 
         try {
@@ -270,7 +270,7 @@ class Economia
         $totalProjetado = $this->totalEconomizadoNaMetaIgnorandoEconomia($metaId, $id) + $valor;
 
         if ($this->valorPassaDoLimiteDaMeta($totalProjetado, (float) $metaNova['valor_meta'])) {
-            throw new DomainException('Nao e possivel deixar a meta com mais dinheiro do que o valor delimitado.');
+            throw new DomainException('Não é possível deixar a meta com mais dinheiro do que o valor delimitado.');
         }
 
         try {
